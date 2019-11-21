@@ -2,6 +2,7 @@
 using System.IO;
 using System.Text;
 using System.Collections.Generic;
+using System.Diagnostics;
 using OpenTK;
 using OpenTK.Graphics.OpenGL4;
 
@@ -102,6 +103,8 @@ namespace LearnOpenTK.Common
             if (code != (int) All.True)
             {
                 // We can use `GL.GetShaderInfoLog(shader)` to get information about the error.
+                string msg = GL.GetShaderInfoLog(shader);
+				Debug.WriteLine(msg);
                 throw new Exception($"Error occurred whilst compiling Shader({shader})");
             }
         }

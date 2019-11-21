@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.Remoting.Messaging;
 using System.Text;
 using System.Threading.Tasks;
 using System.Timers;
@@ -12,20 +13,33 @@ using Timer = System.Windows.Forms.Timer;
 
 namespace GPUExperiments
 {
+	public struct Vertex
+	{
+		public Vector3 Position;
+		public Vector3 Color;
+
+		public Vertex(float x, float y, float z, float r, float g, float b)
+		{
+			Position = new Vector3(x,y,z);
+			Color = new Vector3(r,g,b);
+		}
+
+		public static int SizeOf => sizeof(float) * 6;
+	}
     public class GLView
     {
 	    private GLControl _gl;
 		Timer _timer;
 	    private static readonly Random Random = new Random();
-
-	    private readonly float[] _data =
+		
+	    private readonly Vertex[] _data =
 	    {
 		    // Vertices          Colors
-		    -0.5f, -0.5f, -0.5f, 1f, 0f, 0f,
-		    +0.5f, -0.5f, -0.5f, 0f, 1f, 0f,
-		    +0.5f, -0.5f, +0.5f, 0f, 0f, 1f,
-		    -0.5f, -0.5f, +0.5f, 0f, 1f, 1f,
-		    +0.0f, +0.5f, +0.0f, 1f, 1f, 0f
+		    new Vertex(-0.5f, -0.5f, -0.5f, 1f, 0f, 0f),
+		    new Vertex(+0.5f, -0.5f, -0.5f, 0f, 1f, 0f),
+		    new Vertex(+0.5f, -0.5f, +0.5f, 0f, 0f, 1f),
+		    new Vertex(-0.5f, -0.5f, +0.5f, 0f, 1f, 1f),
+			new Vertex(+0.0f, +0.5f, +0.0f, 1f, 1f, 0f),
 	    };
 
 	    private readonly uint[] _indices =
@@ -89,7 +103,7 @@ namespace GPUExperiments
 
 		    _vertexBufferObject = GL.GenBuffer();
 		    GL.BindBuffer(BufferTarget.ArrayBuffer, _vertexBufferObject);
-		    GL.BufferData(BufferTarget.ArrayBuffer, _data.Length * sizeof(float), _data, BufferUsageHint.DynamicDraw);
+		    GL.BufferData(BufferTarget.ArrayBuffer, _data.Length * Vertex.SizeOf, _data, BufferUsageHint.DynamicDraw);
 
 		    _elementBufferObject = GL.GenBuffer();
 		    GL.BindBuffer(BufferTarget.ElementArrayBuffer, _elementBufferObject);
@@ -137,8 +151,13 @@ namespace GPUExperiments
 		    GL.BindVertexArray(_vertexArrayObject);
 		    GL.DrawElements(PrimitiveType.Triangles, _indices.Length, DrawElementsType.UnsignedInt, 0);
 
-		    // Swaps front frame with back frame
-		    _gl.SwapBuffers();
+		    var points = new[] { new Vector2(0, 0), new Vector2(1, 2), new Vector2(-1, 1) };
+		    var aBezierCurve = new BezierCurve(points);
+
+		    GL.LineWidth(4.0f);
+			
+            // Swaps front frame with back frame
+            _gl.SwapBuffers();
         }
 
 	    private void glControl1_Resize(object sender, EventArgs e)
