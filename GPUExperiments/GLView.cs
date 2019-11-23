@@ -6,6 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Timers;
 using System.Windows.Forms;
+using GPUExperiments.Common;
 using LearnOpenTK.Common;
 using OpenTK;
 using OpenTK.Graphics.OpenGL4;
@@ -62,7 +63,7 @@ namespace GPUExperiments
 	    private int _vertexBufferObject;
 	    private int _elementBufferObject;
 
-	    private Shader _shader;
+	    private VertexFragmentShader _shader;
 
 	    // We use two TrackBars to rotate the object.
 	    // These two fields store the rotation in radians along the X and Y axis.
@@ -108,7 +109,7 @@ namespace GPUExperiments
 		    GL.BindBuffer(BufferTarget.ElementArrayBuffer, _elementBufferObject);
 		    GL.BufferData(BufferTarget.ElementArrayBuffer, _indices.Length * sizeof(uint), _indices, BufferUsageHint.StaticDraw);
 
-		    _shader = new Shader("Shaders/shader.vert", "Shaders/shader.frag");
+		    _shader = new VertexFragmentShader("Shaders/shader.vert", "Shaders/shader.frag");
 		    _shader.Use();
 
 		    // Because there's now 6 floats (vertex + color data) between the start of the first vertex
@@ -171,7 +172,7 @@ namespace GPUExperiments
 		    // We update the view matrix with the new rotation data
 		    var view = Matrix4.CreateRotationX(_rotationX);
 		    view *= Matrix4.CreateRotationY(_rotationY);
-		    _shader.SetMatrix4("view", view);
+		    _shader.SetUniformMatrix4("view", view);
 	    }
     }
 }

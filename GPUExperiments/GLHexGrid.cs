@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using GPUExperiments.Common;
 using LearnOpenTK.Common;
 using OpenTK;
 using OpenTK.Graphics.OpenGL4;
@@ -12,7 +13,7 @@ namespace GPUExperiments
 {
     public class GLHexGrid
     {
-	    private Shader _shader;
+	    private VertexFragmentShader _shader;
         private GLControl _gl;
         Timer _timer;
         private bool _loaded;
@@ -60,7 +61,7 @@ namespace GPUExperiments
                 }
             }
 
-            _shader = new Shader("Shaders/shaderSimple.vert", "Shaders/shaderSimple.frag");
+            _shader = new VertexFragmentShader("Shaders/shaderSimple.vert", "Shaders/shaderSimple.frag");
 
             _loaded = true;
             _gl.Invalidate();
@@ -134,7 +135,7 @@ namespace GPUExperiments
                     view.M24 = y / (float)rows * 2.0f - 1f + 1f / rows;
                     var tm = Matrix4.CreateTranslation(1f, 1f, 0);
                     //view += tm;
-                    _shader.SetMatrix4("view", view);
+                    _shader.SetUniformMatrix4("view", view);
 
                     GL.BindVertexArray(vaos[index]);
                     GL.DrawArrays(PrimitiveType.TriangleFan, 0, sides[index] + 2);
