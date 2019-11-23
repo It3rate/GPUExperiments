@@ -73,6 +73,7 @@ namespace GPUExperiments
             vaos.Add(vao);
 
             GenerateData(sides[index], out var hexData, out var colors);
+
             _vbo = GL.GenBuffer();
             GL.BindBuffer(BufferTarget.ArrayBuffer, _vbo);
             GL.BufferData(BufferTarget.ArrayBuffer, hexData.Length * sizeof(float), hexData, BufferUsageHint.StaticDraw);
@@ -83,28 +84,31 @@ namespace GPUExperiments
             GL.BindBuffer(BufferTarget.ArrayBuffer, _color);
             GL.BufferData(BufferTarget.ArrayBuffer, colors.Length * sizeof(float), colors, BufferUsageHint.StaticDraw);
             GL.EnableVertexAttribArray(1);
-            GL.VertexAttribPointer(1, 3, VertexAttribPointerType.Float, false, 0, 0);
+            GL.VertexAttribPointer(1, 4, VertexAttribPointerType.Float, false, 0, 0);
         }
         private void GenerateData(int sideCount, out float[] polygon, out float[] colors)
         {
+            float radius = (1f - (sideCount - 3f) / 8f) * 0.25f + .95f;
             polygon = new float[(sideCount + 2) * 2];
-            colors = new float[(sideCount + 2) * 3];
+            colors = new float[(sideCount + 2) * 4];
             polygon[0] = 0f;
             polygon[1] = 0f;
             colors[0] = 1f;
             colors[1] = 1f;
             colors[2] = 1f;
-            float radius = 1f;
+            colors[3] = radius;
             float angle = 0;
             float angleStep = (float)(Math.PI * 2.0) / sideCount;
+            float flatTop = rnd.NextDouble() > 0.5 ? angleStep / 2f : 0;
             for (int i = 0; i <= sideCount; i++)
             {
                 int index = i + 1;
-                polygon[index * 2 + 0] = (float)Math.Sin(angle) * radius;
-                polygon[index * 2 + 1] = (float)Math.Cos(angle) * radius;
-                colors[index * 3 + 0] = i / (float)sideCount;
-                colors[index * 3 + 1] = 0.2f;
-                colors[index * 3 + 2] = 0.5f;
+                polygon[index * 2 + 0] = (float)Math.Sin(angle + flatTop) * radius;
+                polygon[index * 2 + 1] = (float)Math.Cos(angle + flatTop) * radius;
+                colors[index * 4 + 0] = i / (float)sideCount;
+                colors[index * 4 + 1] = 0.2f;
+                colors[index * 4 + 2] = 0.5f;
+                colors[index * 4 + 3] = radius;
                 angle += angleStep;
             }
         }
