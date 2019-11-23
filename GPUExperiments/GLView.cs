@@ -61,7 +61,6 @@ namespace GPUExperiments
 
 	    private int _vertexBufferObject;
 	    private int _elementBufferObject;
-	    private int _vertexArrayObject;
 
 	    private Shader _shader;
 
@@ -78,9 +77,9 @@ namespace GPUExperiments
 
 	    private void Initialize()
 	    {
-	        _gl.Load += glControl1_Load;
-	        _gl.Paint += glControl1_Paint;
-	        _gl.Resize += glControl1_Resize;
+	        _gl.Load += glControl_Load;
+	        _gl.Paint += glControl_Paint;
+	        _gl.Resize += glControl_Resize;
 
 	        _timer = new Timer();
 	        _timer.Interval = 16;
@@ -96,7 +95,7 @@ namespace GPUExperiments
 			_gl.Invalidate();
 	    }
 
-	    private void glControl1_Load(object sender, EventArgs e)
+	    private void glControl_Load(object sender, EventArgs e)
 	    {
 		    GL.ClearColor(0f, 0f, 0f, 1f);
 		    GL.Enable(EnableCap.DepthTest);
@@ -125,39 +124,29 @@ namespace GPUExperiments
 		    GL.BindBuffer(BufferTarget.ArrayBuffer, _vertexBufferObject);
 		    GL.BindBuffer(BufferTarget.ElementArrayBuffer, _elementBufferObject);
 
-		    UpdateViewMatrix();
+            GL.Viewport(0, 0, _gl.Width, _gl.Height);
+            UpdateViewMatrix();
 		    _loaded = true;
 
 		    // We have to force a draw or the window will stay blank until we invalidate the control somewhere else.
 		    _gl.Invalidate();
         }
 
-	    private void glControl1_Paint(object sender, PaintEventArgs e)
+	    private void glControl_Paint(object sender, PaintEventArgs e)
 	    {
-
-		    if (!_loaded)
+            if (!_loaded)
 			    return;
 			UpdateViewMatrix();
-
-		    // Clears the control using the background color
+            
 		    GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
 
 		    _shader.Use();
-
-		    // Draws the object
-		    GL.BindVertexArray(_vertexArrayObject);
-		    GL.DrawElements(PrimitiveType.Triangles, _indices.Length, DrawElementsType.UnsignedInt, 0);
-
-		    var points = new[] { new Vector2(0, 0), new Vector2(1, 2), new Vector2(-1, 1) };
-		    var aBezierCurve = new BezierCurve(points);
-
-		    GL.LineWidth(4.0f);
-			
-            // Swaps front frame with back frame
+            GL.DrawElements(PrimitiveType.Triangles, _indices.Length, DrawElementsType.UnsignedInt, 0);
+            
             _gl.SwapBuffers();
         }
 
-	    private void glControl1_Resize(object sender, EventArgs e)
+	    private void glControl_Resize(object sender, EventArgs e)
 	    {
 		    // As the object is firstly created with an empty constructor and all the properties are set afterwards
 		    // it's likely that this event gets fired once or twice before OpenGL initialization (Load event)
@@ -165,7 +154,7 @@ namespace GPUExperiments
 		    if (!_loaded)
 			    return;
 
-		    GL.Viewport(0, 0, _gl.Width, _gl.Height);
+            GL.Viewport(0,0, _gl.Width, _gl.Height);
 
             // We invalidate the control to apply the viewport changes.
             // Invalidating the control forces the Paint event to be fired.

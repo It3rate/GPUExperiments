@@ -1,9 +1,10 @@
 #version 330 core
 
-in vec3 vColor;
+in vec4 vColor;
 out vec4 color;
 
 void main()
 {
-    color = vec4(vColor, 1);
+	float edge = smoothstep(0.96, 0.95, vColor.a) - smoothstep(0.42, 0.4, vColor.a);
+    color = vColor * edge;
 }
