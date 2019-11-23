@@ -119,6 +119,7 @@ namespace LearnOpenTK.Common
             if (code != (int) All.True)
             {
                 // We can use `GL.GetProgramInfoLog(program)` to get information about the error.
+                Debug.WriteLine(GL.GetProgramInfoLog(program));
                 throw new Exception($"Error occurred whilst linking Program({program})");
             }
         }

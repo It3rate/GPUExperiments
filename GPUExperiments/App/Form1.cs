@@ -12,11 +12,14 @@ namespace GPUExperiments
 {
     public partial class Form1 : Form
     {
-	    private GLView view;
+        private GLView _view;
+        private GLHexGrid _hexView;
+
         public Form1()
         {
             InitializeComponent();
-			view = new GLView(glControl1);
+            //_view = new GLView(glControl1);
+            _hexView = new GLHexGrid(glControl1);
         }
 		
 

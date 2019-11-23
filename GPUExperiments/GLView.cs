@@ -34,7 +34,7 @@ namespace GPUExperiments
 		
 	    private readonly Vertex[] _data =
 	    {
-		    // Vertices          Colors
+		                // Vertices                 //Colors
 		    new Vertex(-0.5f, -0.5f, -0.5f, 1f, 0f, 0f),
 		    new Vertex(+0.5f, -0.5f, -0.5f, 0f, 1f, 0f),
 		    new Vertex(+0.5f, -0.5f, +0.5f, 0f, 0f, 1f),
@@ -111,9 +111,6 @@ namespace GPUExperiments
 
 		    _shader = new Shader("Shaders/shader.vert", "Shaders/shader.frag");
 		    _shader.Use();
-
-		    _vertexArrayObject = GL.GenVertexArray();
-		    GL.BindVertexArray(_vertexArrayObject);
 
 		    // Because there's now 6 floats (vertex + color data) between the start of the first vertex
 		    // and the start of the second we specify a stride of 6 * sizeof(float)
