@@ -16,6 +16,8 @@ namespace GPUExperiments
         private GLControl _gl;
         Timer _timer;
         private bool _loaded;
+        private int cols = 8;
+        private int rows = 8;
 
         public GLHexGrid(GLControl control)
         {
@@ -34,7 +36,55 @@ namespace GPUExperiments
             _timer.Tick += OnTimerOnTick;
             _timer.Enabled = true;
         }
-        
+
+        private int _vao1;
+        private int _vao2;
+        private int _vbo;
+        private int _color;
+        private static readonly Random rnd = new Random();
+
+        List<int> sides = new List<int>();
+        List<int> vaos = new List<int>();
+        private void glControl1_Load(object sender, EventArgs e)
+        {
+            GL.ClearColor(0.8f, 0.8f, 0.8f, 1f);
+            GL.Enable(EnableCap.DepthTest);
+
+            for (int y = 0; y < rows; y++)
+            {
+                for (int x = 0; x < cols; x++)
+                {
+                    int index = x + y * cols;
+                    sides.Add(rnd.Next(3, 10));
+                    GenVAO(index);
+                }
+            }
+
+            _shader = new Shader("Shaders/shaderSimple.vert", "Shaders/shaderSimple.frag");
+
+            _loaded = true;
+            _gl.Invalidate();
+        }
+
+        private void GenVAO(int index)
+        {
+            int vao = GL.GenVertexArray();
+            GL.BindVertexArray(vao);
+            vaos.Add(vao);
+
+            GenerateData(sides[index], out var hexData, out var colors);
+            _vbo = GL.GenBuffer();
+            GL.BindBuffer(BufferTarget.ArrayBuffer, _vbo);
+            GL.BufferData(BufferTarget.ArrayBuffer, hexData.Length * sizeof(float), hexData, BufferUsageHint.StaticDraw);
+            GL.EnableVertexAttribArray(0);
+            GL.VertexAttribPointer(0, 2, VertexAttribPointerType.Float, false, 0, 0);
+
+            _color = GL.GenBuffer();
+            GL.BindBuffer(BufferTarget.ArrayBuffer, _color);
+            GL.BufferData(BufferTarget.ArrayBuffer, colors.Length * sizeof(float), colors, BufferUsageHint.StaticDraw);
+            GL.EnableVertexAttribArray(1);
+            GL.VertexAttribPointer(1, 3, VertexAttribPointerType.Float, false, 0, 0);
+        }
         private void GenerateData(int sideCount, out float[] polygon, out float[] colors)
         {
             polygon = new float[(sideCount + 2) * 2];
@@ -58,46 +108,6 @@ namespace GPUExperiments
                 angle += angleStep;
             }
         }
-        private int _vao1;
-        private int _vao2;
-        private int _vbo;
-        private int _color;
-        private void glControl1_Load(object sender, EventArgs e)
-        {
-            GL.ClearColor(0.8f, 0.8f, 0.8f, 1f);
-            GL.Enable(EnableCap.DepthTest);
-
-            GenVAO(0);
-            GenVAO(1);
-            GenVAO(2);
-
-            _shader = new Shader("Shaders/shaderSimple.vert", "Shaders/shaderSimple.frag");
-          
-            _loaded = true;
-            _gl.Invalidate();
-        }
-
-        private int[] sides = {6, 8, 7};
-        List<int> vaos = new List<int>();
-        private void GenVAO(int index)
-        {
-            int vao = GL.GenVertexArray();
-            GL.BindVertexArray(vao);
-            vaos.Add(vao);
-
-            GenerateData(sides[index], out var hexData, out var colors);
-            _vbo = GL.GenBuffer();
-            GL.BindBuffer(BufferTarget.ArrayBuffer, _vbo);
-            GL.BufferData(BufferTarget.ArrayBuffer, hexData.Length * sizeof(float), hexData, BufferUsageHint.StaticDraw);
-            GL.EnableVertexAttribArray(0);
-            GL.VertexAttribPointer(0, 2, VertexAttribPointerType.Float, false, 0, 0);
-
-            _color = GL.GenBuffer();
-            GL.BindBuffer(BufferTarget.ArrayBuffer, _color);
-            GL.BufferData(BufferTarget.ArrayBuffer, colors.Length * sizeof(float), colors, BufferUsageHint.StaticDraw);
-            GL.EnableVertexAttribArray(1);
-            GL.VertexAttribPointer(1, 3, VertexAttribPointerType.Float, false, 0, 0);
-        }
 
         private void glControl1_Paint(object sender, PaintEventArgs e)
         {
@@ -106,20 +116,24 @@ namespace GPUExperiments
             GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
 
             _shader.Use();
-            for (int x = 0; x < 3; x++)
+
+            for (int y = 0; y < rows; y++)
             {
-                for (int y = 0; y < 1; y++)
+                for (int x = 0; x < cols; x++)
                 {
+                    int index = x + y * cols;
                     var view = Matrix4.Identity;
-                   // view *= Matrix4.CreateTranslation(-0.5f, 0.5f, 0);
-                    view *= Matrix4.CreateScale(0.2f);
-                    view.M14 = x / 2f - 0.5f;
+                    // view *= Matrix4.CreateTranslation(-0.5f, 0.5f, 0);
+                    view *= Matrix4.CreateScale(1f/cols, 1f/rows, 1);
+                    float xOffset = y % 2 == 0 ? 2f : 1f;
+                    view.M14 = x / (float)cols * 2.0f - 1f + xOffset/cols - 0.5f/cols;
+                    view.M24 = y / (float)rows * 2.0f - 1f + 1f / rows;
                     var tm = Matrix4.CreateTranslation(1f, 1f, 0);
                     //view += tm;
                     _shader.SetMatrix4("view", view);
 
-                    GL.BindVertexArray(vaos[x]);
-                    GL.DrawArrays(PrimitiveType.TriangleFan, 0, sides[x] + 2);
+                    GL.BindVertexArray(vaos[index]);
+                    GL.DrawArrays(PrimitiveType.TriangleFan, 0, sides[index] + 2);
                 }
             }
 
