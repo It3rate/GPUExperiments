@@ -1,20 +1,51 @@
 ﻿#version 430
+//
+////uniform image2D destTex;
+////uniform sampler2D destTex;
+//layout(rgba32f, binding = 0) uniform image2D destTex;
+//
+//layout (local_size_x = 16, local_size_y = 16) in;
+//
+//void main() 
+//{
+//	ivec2 storePos = ivec2(gl_GlobalInvocationID.xy);
+//	//float localCoef = length(vec2(ivec2(gl_LocalInvocationID.xy)-8)/8.0);
+//	//float globalCoef = sin(float(gl_WorkGroupID.x+gl_WorkGroupID.y)*0.1 + roll)*0.5;
+//	//imageStore(destTex, storePos, vec4(1.0-globalCoef*localCoef, 0.0, 0.0, 0.0));
+//	imageStore(destTex, storePos, vec4(0.0, 1.0, 0.0, 1.0));
+////	imageStore(destTex, ivec2(150,151), vec4(0.0, 1.0, 0.0, 1.0));
+////	imageStore(destTex, ivec2(150,152), vec4(0.0, 1.0, 0.0, 1.0));
+////	imageStore(destTex, ivec2(150,153), vec4(0.0, 1.0, 0.0, 1.0));
+////	imageStore(destTex, ivec2(150,154), vec4(0.0, 1.0, 0.0, 1.0));
+//}
 
-//uniform image2D destTex;
-//uniform sampler2D destTex;
-layout(rgba32f, binding = 0) uniform image2D destTex;
 
-layout (local_size_x = 16, local_size_y = 16) in;
+//layout (local_size_x = 16, local_size_y = 16, local_size_z = 1) in;
+//layout(binding=0, rgba8) uniform mediump image2D destTex;
+//
+//void main()
+//{
+//        float u = float(gl_GlobalInvocationID.x);
+//        float v = float(gl_GlobalInvocationID.y);
+//        
+//        vec4 inv = 1.0 - imageLoad(destTex, ivec2(u,v));
+//		vec4 col = vec4(0.5,1.0,0.0,1.0);
+//        imageStore(destTex, ivec2(u,v), inv);
+//
+//}
 
-void main() 
-{
-	ivec2 storePos = ivec2(gl_GlobalInvocationID.xy);
-	//float localCoef = length(vec2(ivec2(gl_LocalInvocationID.xy)-8)/8.0);
-	//float globalCoef = sin(float(gl_WorkGroupID.x+gl_WorkGroupID.y)*0.1 + roll)*0.5;
-	//imageStore(destTex, storePos, vec4(1.0-globalCoef*localCoef, 0.0, 0.0, 0.0));
-	imageStore(destTex, storePos, vec4(0.0, 1.0, 0.0, 1.0));
-//	imageStore(destTex, ivec2(150,151), vec4(0.0, 1.0, 0.0, 1.0));
-//	imageStore(destTex, ivec2(150,152), vec4(0.0, 1.0, 0.0, 1.0));
-//	imageStore(destTex, ivec2(150,153), vec4(0.0, 1.0, 0.0, 1.0));
-//	imageStore(destTex, ivec2(150,154), vec4(0.0, 1.0, 0.0, 1.0));
-}
+
+ uniform float roll; 
+ //uniform writeonly image2D destTex; 
+ layout(binding=0, rgba8) uniform mediump image2D destTex;
+ layout (local_size_x = 16, local_size_y = 16) in; 
+
+ void main() { 
+	 ivec2 storePos = ivec2(gl_GlobalInvocationID.xy); 
+	 float localCoef = length(vec2(ivec2(gl_LocalInvocationID.xy)-8)/8.0); 
+	 float globalCoef = sin(float(gl_WorkGroupID.x+gl_WorkGroupID.y)*0.1 + roll)*0.5; 
+	 //vec4 col = vec4(0.5,1.0,0.0,1.0);
+	 vec4 col = vec4(1.0-globalCoef*localCoef, 1.0, 0.0, 0.0); 
+	 vec4 org = imageLoad(destTex, storePos);
+	 imageStore(destTex, storePos, vec4(col.x, org.y, org.z, 1.0));
+ } 

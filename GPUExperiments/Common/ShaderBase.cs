@@ -107,7 +107,7 @@ namespace GPUExperiments.Common
 
             int unitIndex = textureUnit - TextureUnit.Texture0;
             GL.BindImageTexture(unitIndex, result, 0, false, 0,
-                TextureAccess.WriteOnly, SizedInternalFormat.Rgba32f);
+                TextureAccess.ReadWrite, SizedInternalFormat.Rgba32f);
 
             return result;
         }

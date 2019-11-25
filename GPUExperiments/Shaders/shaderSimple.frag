@@ -1,9 +1,9 @@
-#version 330 core
+#version 430 core
 
+uniform sampler2D destTex;
 in vec4 vColor;
 in vec2 texCoord;
 out vec4 color;
-uniform sampler2D destTex;
 
 void main()
 {
@@ -15,3 +15,12 @@ void main()
 	}
 	
 }
+// #version 430\n
+// uniform sampler2D srcTex; 
+// in vec2 texCoord; 
+// out vec4 color;
+
+// void main() { 
+// float c = texture(srcTex, texCoord).x;
+// color = vec4(c, 1.0, 1.0, 1.0); 
+// }
