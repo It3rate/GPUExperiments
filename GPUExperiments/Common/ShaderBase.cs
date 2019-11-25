@@ -93,23 +93,24 @@ namespace GPUExperiments.Common
 
         public static int CreateTexture(TextureUnit textureUnit, Bitmap bmp)
         {
-            int result = GL.GenTexture();
+	        int result = GL.GenTexture();
 
-            GL.ActiveTexture(textureUnit);
-            GL.BindTexture(TextureTarget.Texture2D, result);
-            GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMinFilter, (int)All.Linear);
-            GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMagFilter, (int)All.Linear);
+	        GL.ActiveTexture(textureUnit);
+	        GL.BindTexture(TextureTarget.Texture2D, result);
+	        GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMinFilter, (int)All.Linear);
+	        GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMagFilter, (int)All.Linear);
 
-            BitmapData data = bmp.LockBits(new Rectangle(0, 0, bmp.Width, bmp.Height),
-                    ImageLockMode.ReadOnly, System.Drawing.Imaging.PixelFormat.Format32bppArgb);
-            GL.TexImage2D(TextureTarget.Texture2D, 0, PixelInternalFormat.Rgba,
-                bmp.Width, bmp.Height, 0, PixelFormat.Bgra, PixelType.UnsignedByte, data.Scan0);
+	        BitmapData data = bmp.LockBits(new Rectangle(0, 0, bmp.Width, bmp.Height),
+		        ImageLockMode.ReadOnly, System.Drawing.Imaging.PixelFormat.Format32bppArgb);
 
-            int unitIndex = textureUnit - TextureUnit.Texture0;
-            GL.BindImageTexture(unitIndex, result, 0, false, 0,
-                TextureAccess.ReadWrite, SizedInternalFormat.Rgba32f);
+	        GL.TexImage2D(TextureTarget.Texture2D, 0, PixelInternalFormat.Rgba,
+		        bmp.Width, bmp.Height, 0, PixelFormat.Bgra, PixelType.UnsignedByte, data.Scan0);
 
-            return result;
+	        int unitIndex = textureUnit - TextureUnit.Texture0;
+	        GL.BindImageTexture(unitIndex, result, 0, false, 0,
+		        TextureAccess.ReadWrite, SizedInternalFormat.Rgba8);
+
+	        return result;
         }
 
 
