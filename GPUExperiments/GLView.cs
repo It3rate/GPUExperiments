@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using System.Timers;
 using System.Windows.Forms;
 using GPUExperiments.Common;
+using GPUExperiments.Shaders;
 using LearnOpenTK.Common;
 using OpenTK;
 using OpenTK.Graphics.OpenGL4;
@@ -14,33 +15,20 @@ using Timer = System.Windows.Forms.Timer;
 
 namespace GPUExperiments
 {
-	public struct Vertex
-	{
-		public Vector3 Position;
-		public Vector3 Color;
-
-		public Vertex(float x, float y, float z, float r, float g, float b)
-		{
-			Position = new Vector3(x,y,z);
-			Color = new Vector3(r,g,b);
-		}
-
-		public static int SizeOf => sizeof(float) * 6;
-	}
     public class GLView
     {
 	    private GLControl _gl;
 		Timer _timer;
 	    private static readonly Random Random = new Random();
 		
-	    private readonly Vertex[] _data =
+	    private readonly VertexPosColor[] _data =
 	    {
 		                // Vertices                 //Colors
-		    new Vertex(-0.5f, -0.5f, -0.5f, 1f, 0f, 0f),
-		    new Vertex(+0.5f, -0.5f, -0.5f, 0f, 1f, 0f),
-		    new Vertex(+0.5f, -0.5f, +0.5f, 0f, 0f, 1f),
-		    new Vertex(-0.5f, -0.5f, +0.5f, 0f, 1f, 1f),
-			new Vertex(+0.0f, +0.5f, +0.0f, 1f, 1f, 0f),
+		    new VertexPosColor(-0.5f, -0.5f, -0.5f, 1f, 0f, 0f),
+		    new VertexPosColor(+0.5f, -0.5f, -0.5f, 0f, 1f, 0f),
+		    new VertexPosColor(+0.5f, -0.5f, +0.5f, 0f, 0f, 1f),
+		    new VertexPosColor(-0.5f, -0.5f, +0.5f, 0f, 1f, 1f),
+			new VertexPosColor(+0.0f, +0.5f, +0.0f, 1f, 1f, 0f),
 	    };
 
 	    private readonly uint[] _indices =
@@ -103,7 +91,7 @@ namespace GPUExperiments
 
 		    _vertexBufferObject = GL.GenBuffer();
 		    GL.BindBuffer(BufferTarget.ArrayBuffer, _vertexBufferObject);
-		    GL.BufferData(BufferTarget.ArrayBuffer, _data.Length * Vertex.SizeOf, _data, BufferUsageHint.DynamicDraw);
+		    GL.BufferData(BufferTarget.ArrayBuffer, _data.Length * VertexPosColor.SizeOf, _data, BufferUsageHint.DynamicDraw);
 
 		    _elementBufferObject = GL.GenBuffer();
 		    GL.BindBuffer(BufferTarget.ElementArrayBuffer, _elementBufferObject);

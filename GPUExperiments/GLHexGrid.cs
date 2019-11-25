@@ -1,10 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Drawing;
+using System.Drawing.Imaging;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using GPUExperiments.Common;
+using GPUExperiments.Properties;
+using GPUExperiments.Shaders;
 using LearnOpenTK.Common;
 using OpenTK;
 using OpenTK.Graphics.OpenGL4;
@@ -13,7 +17,9 @@ namespace GPUExperiments
 {
     public class GLHexGrid
     {
-	    private VertexFragmentShader _shader;
+        private int _textureId;
+        private VertexFragmentShader _vfShader;
+        private ComputeShader _computeShader;
         private GLControl _gl;
         Timer _timer;
         private bool _loaded;
@@ -61,7 +67,13 @@ namespace GPUExperiments
                 }
             }
 
-            _shader = new VertexFragmentShader("Shaders/shaderSimple.vert", "Shaders/shaderSimple.frag");
+            int _textureId = ShaderBase.CreateTexture(TextureUnit.Texture0, Resources.glTest5);
+            _vfShader = new VertexFragmentShader("Shaders/shaderSimple.vert", "Shaders/shaderSimple.frag");
+            _computeShader = new ComputeShader("Shaders/shaderSimple.comp");
+
+            GL.GetInteger((GetPName)All.MaxComputeWorkGroupCount, out var workGroupCount);
+            GL.GetInteger((GetPName)All.MaxComputeWorkGroupSize, out var workGroupSize);
+            int workGroupInvocations = GL.GetInteger((GetPName)All.MaxComputeWorkGroupInvocations);
 
             _loaded = true;
             _gl.Invalidate();
@@ -77,18 +89,33 @@ namespace GPUExperiments
 
             _vbo = GL.GenBuffer();
             GL.BindBuffer(BufferTarget.ArrayBuffer, _vbo);
-            GL.BufferData(BufferTarget.ArrayBuffer, hexData.Length * sizeof(float), hexData, BufferUsageHint.StaticDraw);
+            GL.BufferData(BufferTarget.ArrayBuffer, hexData.Length * sizeof(float), hexData, BufferUsageHint.StreamDraw);
             GL.EnableVertexAttribArray(0);
             GL.VertexAttribPointer(0, 2, VertexAttribPointerType.Float, false, 0, 0);
 
             _color = GL.GenBuffer();
             GL.BindBuffer(BufferTarget.ArrayBuffer, _color);
-            GL.BufferData(BufferTarget.ArrayBuffer, colors.Length * sizeof(float), colors, BufferUsageHint.StaticDraw);
+            GL.BufferData(BufferTarget.ArrayBuffer, colors.Length * sizeof(float), colors, BufferUsageHint.StreamDraw);
             GL.EnableVertexAttribArray(1);
             GL.VertexAttribPointer(1, 4, VertexAttribPointerType.Float, false, 0, 0);
+
+            var _txtVert = GL.GenBuffer();
+            float[] texVerticies =
+            {
+               // Texture coordinates
+               1.0f, 1.0f, // top right
+               1.0f, 0.0f, // bottom right
+               0.0f, 0.0f, // bottom left
+               0.0f, 1.0f  // top left
+            };
+            GL.BindBuffer(BufferTarget.ArrayBuffer, _txtVert);
+            GL.BufferData(BufferTarget.ArrayBuffer, texVerticies.Length * sizeof(float), texVerticies, BufferUsageHint.StreamDraw);
+            GL.EnableVertexAttribArray(2);
+            GL.VertexAttribPointer(2, 2, VertexAttribPointerType.Float, false, 0, 0);
         }
         private void GenerateData(int sideCount, out float[] polygon, out float[] colors)
         {
+            //VertexPosColor[] result = new VertexPosColor[sideCount + 2];
             float radius = (1f - (sideCount - 3f) / 8f) * 0.25f + .95f;
             polygon = new float[(sideCount + 2) * 2];
             colors = new float[(sideCount + 2) * 4];
@@ -120,8 +147,11 @@ namespace GPUExperiments
 
             GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
 
-            _shader.Use();
+            _computeShader.Use();
+            GL.DispatchCompute(256/16,256/16,1);
+            GL.MemoryBarrier(MemoryBarrierFlags.AllBarrierBits);//ShaderImageAccessBarrierBit);
 
+            _vfShader.Use();
             for (int y = 0; y < rows; y++)
             {
                 for (int x = 0; x < cols; x++)
@@ -135,7 +165,7 @@ namespace GPUExperiments
                     view.M24 = y / (float)rows * 2.0f - 1f + 1f / rows;
                     var tm = Matrix4.CreateTranslation(1f, 1f, 0);
                     //view += tm;
-                    _shader.SetUniformMatrix4("view", view);
+                    _vfShader.SetUniformMatrix4("view", view);
 
                     GL.BindVertexArray(vaos[index]);
                     GL.DrawArrays(PrimitiveType.TriangleFan, 0, sides[index] + 2);

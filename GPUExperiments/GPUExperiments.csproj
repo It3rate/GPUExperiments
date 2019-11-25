@@ -67,6 +67,7 @@
     <Compile Include="GLView.cs" />
     <Compile Include="App\Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Shaders\VertexDefinitions.cs" />
     <EmbeddedResource Include="App\Form1.resx">
       <DependentUpon>Form1.cs</DependentUpon>
     </EmbeddedResource>
@@ -78,6 +79,7 @@
     <Compile Include="Properties\Resources.Designer.cs">
       <AutoGen>True</AutoGen>
       <DependentUpon>Resources.resx</DependentUpon>
+      <DesignTime>True</DesignTime>
     </Compile>
     <None Include="App\OpenTK.dll.config" />
     <None Include="App\packages.config" />
@@ -92,6 +94,9 @@
       <DependentUpon>Settings.settings</DependentUpon>
       <DesignTimeSharedInput>True</DesignTimeSharedInput>
     </Compile>
+    <None Include="Shaders\shaderSimple.comp">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
     <None Include="Shaders\shaderSimple.frag">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
@@ -109,5 +114,13 @@
     <None Include="App\App.config" />
   </ItemGroup>
   <ItemGroup />
+  <ItemGroup>
+    <None Include="Resources\glTest5.png" />
+    <None Include="Resources\glTest4.png" />
+    <None Include="Resources\glTest3.png" />
+    <None Include="Resources\glTest2.png" />
+    <None Include="Resources\glTest.png" />
+    <Content Include="Resources\it3rate.png" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
