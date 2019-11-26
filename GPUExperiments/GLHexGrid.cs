@@ -24,8 +24,8 @@ namespace GPUExperiments
         private GLControl _gl;
         Timer _timer;
         private bool _loaded;
-        private int cols = 2;
-        private int rows = 2;
+        private int cols = 6;
+        private int rows = 6;
 
         public GLHexGrid(GLControl control)
         {
@@ -70,6 +70,7 @@ namespace GPUExperiments
             _vfShader = new VertexFragmentShader("Shaders/shaderSimple.vert", "Shaders/shaderSimple.frag");
             _computeShader = new ComputeShader("Shaders/shaderSimple.comp");
             _textureId = ShaderBase.CreateTexture(TextureUnit.Texture0, Resources.glTest5);
+            _textureId = ShaderBase.CreateTexture(TextureUnit.Texture1, Resources.glTest5);
 
             //GL.GetInteger((GetIndexedPName)All.MaxComputeWorkGroupCount, 0, out int xc);
             //GL.GetInteger((GetIndexedPName)All.MaxComputeWorkGroupCount, 1, out int yc);
