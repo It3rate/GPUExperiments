@@ -8,9 +8,6 @@ namespace GPUExperiments
 {
     static class Program
     {
-        /// <summary>C:\Users\Robin\Downloads\LearnOpenTK-master\Common\Camera.cs
-        /// The main entry point for the application.
-        /// </summary>
         [STAThread]
         static void Main()
         {

@@ -1,14 +1,17 @@
 ﻿#version 430
 
  uniform float roll; 
+ shared float roll2; 
  layout(binding=0, rgba8) uniform mediump image2D destTex;
- layout (local_size_x = 16, local_size_y = 16) in; 
+ layout (local_size_x = 1, local_size_y = 1) in; 
 
- void main() { 
+ void main() 
+ { 
+	vec2 dims = gl_NumWorkGroups.xy * gl_WorkGroupSize.xy;
 	 ivec2 storePos = ivec2(gl_GlobalInvocationID.xy); 
-	 float localCoef = length(vec2(ivec2(gl_LocalInvocationID.xy)-8)/8.0); 
-	 float globalCoef = sin(float(gl_WorkGroupID.x+gl_WorkGroupID.y)*0.1 + roll)*0.5; 
-	 float loc = 1.0 - globalCoef * localCoef; 
 	 vec4 org = imageLoad(destTex, storePos);
-	 imageStore(destTex, storePos, vec4(loc, org.y, org.z, 1.0));
+	 vec3 gid = gl_GlobalInvocationID;
+	 float locIndex = float(gid.x+gid.y*dims.x) / float(dims.x*dims.y);
+	 imageStore(destTex, storePos, //vec4(0,0,org.z,1.0));
+	 vec4(org.x, locIndex-roll, gl_WorkGroupID.x/float(gl_NumWorkGroups.x), 1.0));
  } 

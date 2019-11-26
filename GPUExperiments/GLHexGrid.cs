@@ -24,8 +24,8 @@ namespace GPUExperiments
         private GLControl _gl;
         Timer _timer;
         private bool _loaded;
-        private int cols = 8;
-        private int rows = 8;
+        private int cols = 2;
+        private int rows = 2;
 
         public GLHexGrid(GLControl control)
         {
@@ -153,10 +153,11 @@ namespace GPUExperiments
             //GL.BindImageTexture(0, _textureId, 0, false, 0, TextureAccess.ReadWrite, SizedInternalFormat.Rgba8);
 
             frame++;
-            if (frame == 1024) frame = 0;
-            GL.Uniform1(GL.GetUniformLocation(_computeShader.ProgramId, "roll"), (float)frame * 0.01f);
+            int speed = 64;
+            if (frame == speed) frame = 0;
+            GL.Uniform1(GL.GetUniformLocation(_computeShader.ProgramId, "roll"), frame / (float)speed);
 
-            GL.DispatchCompute(256/16,256/16,1);
+            GL.DispatchCompute(256,256,1);
             //GL.MemoryBarrier(MemoryBarrierFlags.ShaderImageAccessBarrierBit);
 
             _vfShader.Use();
