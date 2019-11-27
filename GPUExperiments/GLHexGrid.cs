@@ -67,6 +67,7 @@ namespace GPUExperiments
                     GenVAO(index);
                 }
             }
+			GenerateBuffer();
 			//ShaderProgram.SetupDebugOutput();
             _vfShader = new VertexFragmentShader("Shaders/shaderSimple.vert", "Shaders/shaderSimple.frag");
             _computeShader = new ComputeShader("Shaders/shaderSimple.comp");
@@ -121,6 +122,34 @@ namespace GPUExperiments
             GL.BufferData(BufferTarget.ArrayBuffer, texVerticies.Length * sizeof(float), texVerticies, BufferUsageHint.StreamDraw);
             GL.EnableVertexAttribArray(2);
             GL.VertexAttribPointer(2, 2, VertexAttribPointerType.Float, false, 0, 0);
+
+
+        }
+
+        private int _bufferId;
+
+        private struct Polygon
+        {
+	        public int SideCount;
+	        public float Radius;
+	        public float[] Points;
+
+	        public Polygon(int sideCount, float radius, float[] points)
+	        {
+		        SideCount = sideCount;
+		        Radius = radius;
+		        Points = points;
+	        }
+        }
+        private void GenerateBuffer()
+        {
+			GenerateData(6, out var polygon, out var colors);
+			Polygon buffer = new Polygon(6, 0.1f, polygon); 
+	        _bufferId = GL.GenBuffer();
+			GL.BindBuffer(BufferTarget.ShaderStorageBuffer, _bufferId);
+			GL.BufferData(BufferTarget.ShaderStorageBuffer, 2 + buffer.Points.Length, polygon, BufferUsageHint.DynamicCopy);
+			GL.BindBufferBase(BufferRangeTarget.ShaderStorageBuffer, 0, _bufferId);
+			GL.BindBuffer(BufferTarget.ShaderStorageBuffer, 0);
         }
         private void GenerateData(int sideCount, out float[] polygon, out float[] colors)
         {
