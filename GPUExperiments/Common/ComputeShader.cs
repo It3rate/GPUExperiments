@@ -7,7 +7,7 @@ using OpenTK.Graphics.OpenGL4;
 
 namespace GPUExperiments.Common
 {
-    public class ComputeShader : ShaderBase
+    public class ComputeShader : ShaderProgram
     {
         public ComputeShader(string computeShaderPath)
         {

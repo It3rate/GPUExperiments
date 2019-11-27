@@ -56,7 +56,7 @@
     <Compile Include="Common\Camera.cs" />
     <Compile Include="Common\ComputeShader.cs" />
     <Compile Include="Common\VertexFragmentShader.cs" />
-    <Compile Include="Common\ShaderBase.cs" />
+    <Compile Include="Common\ShaderProgram.cs" />
     <Compile Include="Common\Texture.cs" />
     <Compile Include="App\Form1.cs">
       <SubType>Form</SubType>

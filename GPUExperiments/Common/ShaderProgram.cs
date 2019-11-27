@@ -5,6 +5,7 @@ using System.Drawing;
 using System.Drawing.Imaging;
 using System.IO;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 using OpenTK;
@@ -13,7 +14,7 @@ using PixelFormat = OpenTK.Graphics.OpenGL4.PixelFormat;
 
 namespace GPUExperiments.Common
 {
-    public abstract class ShaderBase
+    public abstract class ShaderProgram
     {
         public int ProgramId;
         protected readonly Dictionary<string, int> UniformLocations = new Dictionary<string, int>();
@@ -49,6 +50,10 @@ namespace GPUExperiments.Common
             GL.UseProgram(ProgramId);
         }
 
+        public string GetInfoLog()
+        {
+	        return GL.GetShaderInfoLog(ProgramId);
+        }
         public int GetAttribLocation(string attribName)
         {
             return GL.GetAttribLocation(ProgramId, attribName);
@@ -157,6 +162,59 @@ namespace GPUExperiments.Common
             {
                 return sr.ReadToEnd();
             }
+        }
+
+
+
+
+        private static Dictionary<EnableCap, bool> _capabilityCache = new Dictionary<EnableCap, bool>();
+        public static void SetCapability(EnableCap capability, bool enable)
+        {
+	        if (_capabilityCache.TryGetValue(capability, out bool isEnabled) && isEnabled == enable)
+		        return;
+
+	        if (enable) GL.Enable(capability);
+	        else GL.Disable(capability);
+
+	        _capabilityCache[capability] = enable;
+        }
+
+        private static DebugProc _openGLDebugDelegate;
+        public static void SetupDebugOutput()
+        {
+#if !DEBUG
+            return;
+#endif
+	        Trace.WriteLine("\nenabling openGL debug output");
+
+	        SetCapability(EnableCap.DebugOutput, true);
+	        SetCapability(EnableCap.DebugOutputSynchronous, true);
+	        CheckError("enabling debug output");
+
+	        _openGLDebugDelegate = new DebugProc(OpenGLDebugCallback);
+
+	        GL.DebugMessageCallback(_openGLDebugDelegate, IntPtr.Zero);
+	        GL.DebugMessageControl(DebugSourceControl.DontCare, DebugTypeControl.DontCare, DebugSeverityControl.DontCare, 0, new int[0], true);
+	        CheckError("setting up debug output");
+
+	        GL.DebugMessageInsert(DebugSourceExternal.DebugSourceApplication, DebugType.DebugTypeMarker, 0, DebugSeverity.DebugSeverityNotification, -1, "Debug output enabled");
+	        CheckError("testing debug output");
+        }
+
+        private static void OpenGLDebugCallback(DebugSource source, DebugType type, int id, DebugSeverity severity, int length, IntPtr message, IntPtr userParam)
+        {
+	        Trace.WriteLine(source == DebugSource.DebugSourceApplication ?
+		        $"openGL - {Marshal.PtrToStringAnsi(message, length)}" :
+		        $"openGL - {Marshal.PtrToStringAnsi(message, length)}\n\tid:{id} severity:{severity} type:{type} source:{source}\n");
+        }
+
+        public static void CheckError(string context = null, bool alwaysThrow = false)
+        {
+	        var error = GL.GetError();
+	        if (alwaysThrow || error != ErrorCode.NoError)
+		        throw new Exception(
+			        (context != null ? "openGL error while " + context : "openGL error") +
+			        (error != ErrorCode.NoError ? ": " + error.ToString() : string.Empty));
         }
 
     }

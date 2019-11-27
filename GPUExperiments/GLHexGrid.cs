@@ -24,8 +24,8 @@ namespace GPUExperiments
         private GLControl _gl;
         Timer _timer;
         private bool _loaded;
-        private int cols = 6;
-        private int rows = 6;
+        private int cols = 6;//2;//
+        private int rows = 6;//2;//
 
         public GLHexGrid(GLControl control)
         {
@@ -63,18 +63,25 @@ namespace GPUExperiments
                 for (int x = 0; x < cols; x++)
                 {
                     int index = x + y * cols;
-                    sides.Add(rnd.Next(3, 10));
+                    sides.Add(rnd.Next(3, 12));
                     GenVAO(index);
                 }
             }
+			//ShaderProgram.SetupDebugOutput();
             _vfShader = new VertexFragmentShader("Shaders/shaderSimple.vert", "Shaders/shaderSimple.frag");
             _computeShader = new ComputeShader("Shaders/shaderSimple.comp");
-            _textureId = ShaderBase.CreateTexture(TextureUnit.Texture0, Resources.glTest5);
-            _textureId = ShaderBase.CreateTexture(TextureUnit.Texture1, Resources.glTest5);
+            _textureId = ShaderProgram.CreateTexture(TextureUnit.Texture0, Resources.glTest5);
+            _textureId = ShaderProgram.CreateTexture(TextureUnit.Texture1, Resources.glTest5);
 
             //GL.GetInteger((GetIndexedPName)All.MaxComputeWorkGroupCount, 0, out int xc);
             //GL.GetInteger((GetIndexedPName)All.MaxComputeWorkGroupCount, 1, out int yc);
             //GL.GetInteger((GetIndexedPName)All.MaxComputeWorkGroupCount, 2, out int zc);
+
+            int maxVertexImageUniforms = GL.GetInteger(GetPName.MaxVertexImageUniforms);
+            int maxFragmentImageUniforms = GL.GetInteger(GetPName.MaxFragmentImageUniforms);
+            int maxColorTextureSamples = GL.GetInteger(GetPName.MaxColorTextureSamples);
+            int maxCombinedImageUniforms = GL.GetInteger(GetPName.MaxCombinedImageUniforms);
+            int maxCombinedTextureImageUnits = GL.GetInteger(GetPName.MaxCombinedTextureImageUnits);
 
             _loaded = true;
             _gl.Invalidate();
@@ -154,7 +161,7 @@ namespace GPUExperiments
             //GL.BindImageTexture(0, _textureId, 0, false, 0, TextureAccess.ReadWrite, SizedInternalFormat.Rgba8);
 
             frame++;
-            int speed = 64;
+            int speed = 128;
             if (frame == speed) frame = 0;
             GL.Uniform1(GL.GetUniformLocation(_computeShader.ProgramId, "roll"), frame / (float)speed);
 

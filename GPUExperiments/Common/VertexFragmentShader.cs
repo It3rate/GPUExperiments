@@ -2,7 +2,7 @@
 
 namespace GPUExperiments.Common
 {
-    public class VertexFragmentShader : ShaderBase
+    public class VertexFragmentShader : ShaderProgram
     {
         public VertexFragmentShader(string vertexShaderPath, string fragmentShaderPath)
         {

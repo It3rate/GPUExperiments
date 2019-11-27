@@ -2,18 +2,54 @@
 
  uniform float roll; 
  shared float roll2; 
- layout(binding=0, rgba8) uniform mediump image2D destTex;
- layout(binding=1, rgba8) uniform mediump image2D srcTex;
+ layout(binding=0, rgba8) writeonly uniform mediump image2D destTex;
+ layout(binding=1, rgba8) readonly uniform mediump image2D srcTex;
  layout (local_size_x = 1, local_size_y = 1) in; 
+
+ shared vec2 dims;
+ 
+ vec4[8] getNeighbors(ivec2 pos, int dist)
+ {
+	vec4 result[8];
+	ivec2 size = imageSize(srcTex);
+	int l = pos.x >= dist ? -dist : 0;
+	int r = pos.x <= size.x - dist - 1 ? dist : 0;
+	int b = pos.y >= dist ? -dist : 0;
+	int t = pos.y <= size.y - dist - 1 ? dist : 0;
+	result[0] = imageLoad(srcTex, ivec2(pos.x + 0, pos.y + t)); // t
+	result[1] = imageLoad(srcTex, ivec2(pos.x + l, pos.y + t)); // tl
+	result[2] = imageLoad(srcTex, ivec2(pos.x + l, pos.y + 0)); // l
+	result[3] = imageLoad(srcTex, ivec2(pos.x + l, pos.y + b)); // bl
+	result[4] = imageLoad(srcTex, ivec2(pos.x + 0, pos.y + b)); // b
+	result[5] = imageLoad(srcTex, ivec2(pos.x + r, pos.y + b)); // br
+	result[6] = imageLoad(srcTex, ivec2(pos.x + r, pos.y + 0)); // r
+	result[7] = imageLoad(srcTex, ivec2(pos.x + r, pos.y + t)); // tr
+
+	return result;
+ }
+ vec4 averageNeighbors(ivec2 pos)
+ {
+	vec4[8] elements = getNeighbors(pos, 4);
+	vec4 result = elements[0];
+	for(int i = 1; i < 8; i++)
+	{
+		result += elements[i];
+	}
+	return result / 8.0;
+ }
 
  void main() 
  { 
-	vec2 dims = gl_NumWorkGroups.xy * gl_WorkGroupSize.xy;
+	 dims = gl_NumWorkGroups.xy * gl_WorkGroupSize.xy;
 	 ivec2 storePos = ivec2(gl_GlobalInvocationID.xy); 
 	 vec4 org = imageLoad(srcTex, storePos);
-	 vec3 gid = gl_GlobalInvocationID;
-	 float locIndex = float(gid.x+gid.y*dims.x) / float(dims.x*dims.y);
-	 float rollEase = abs(roll * 2.0 - 1.0);
-	 imageStore(destTex, storePos, //vec4(0,0,org.z,1.0));
-		vec4(org.x*rollEase, org.y * abs(0.5-rollEase), org.z*rollEase, 1.0));// gl_WorkGroupID.x/float(gl_NumWorkGroups.x), 1.0));
- } 
+	 vec4 blur = averageNeighbors(storePos);
+	 //blur.x = 1.0;
+	 float rollEase = roll > 0.5 ? 0 :  1.0-abs(roll * 4.0 - 1.0);
+	 vec4 result = mix(org, blur, rollEase);
+	 imageStore(destTex, storePos, result);
+//	 vec3 gid = gl_GlobalInvocationID;
+//	 float locIndex = float(gid.x+gid.y*dims.x) / float(dims.x*dims.y);
+//	 imageStore(destTex, storePos, //vec4(0,0,org.z,1.0));
+//		vec4(org.x*rollEase, org.y * abs(0.5-rollEase), org.z*rollEase, 1.0));
+ }
