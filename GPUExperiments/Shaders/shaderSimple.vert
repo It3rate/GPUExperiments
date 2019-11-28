@@ -11,7 +11,7 @@ layout(location = 2) in vec2 texCoordIn;
 	vec2 points[8];
 };
 layout(std430, binding = 0) buffer polygons {
-	Polygon items[];
+	Polygon items[1];
 };
 
 

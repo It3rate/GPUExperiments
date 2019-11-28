@@ -71,8 +71,8 @@ namespace GPUExperiments
 			//ShaderProgram.SetupDebugOutput();
             _vfShader = new VertexFragmentShader("Shaders/shaderSimple.vert", "Shaders/shaderSimple.frag");
             _computeShader = new ComputeShader("Shaders/shaderSimple.comp");
-            _textureId = ShaderProgram.CreateTexture(TextureUnit.Texture0, Resources.glTest5);
-            _textureId = ShaderProgram.CreateTexture(TextureUnit.Texture1, Resources.glTest5);
+            _textureId = ShaderProgram.CreateTexture(TextureUnit.Texture0, Resources.glTest5, TextureAccess.WriteOnly);
+            _textureId = ShaderProgram.CreateTexture(TextureUnit.Texture1, Resources.glTest5, TextureAccess.ReadOnly);
 
             //GL.GetInteger((GetIndexedPName)All.MaxComputeWorkGroupCount, 0, out int xc);
             //GL.GetInteger((GetIndexedPName)All.MaxComputeWorkGroupCount, 1, out int yc);
