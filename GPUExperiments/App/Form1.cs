@@ -12,14 +12,18 @@ namespace GPUExperiments
 {
     public partial class Form1 : Form
     {
+	    private GLOneTriangle _oneTriangleView;
         private GLView _view;
         private GLHexGrid _hexView;
+        private GLPolyDraw _polyDrawView;
 
         public Form1()
         {
             InitializeComponent();
+            //_oneTriangleView = new GLOneTriangle(glControl1);
             //_view = new GLView(glControl1);
-            _hexView = new GLHexGrid(glControl1);
+            //_hexView = new GLHexGrid(glControl1);
+            _polyDrawView = new GLPolyDraw(glControl1);
         }
 		
 
