@@ -2,6 +2,11 @@
 
  layout (local_size_x = 1, local_size_y = 1) in; 
 
+ layout (std140, binding = 1) buffer VertexBuffer {
+   vec2 verts [];
+};
+
  void main() 
  { 
+	 verts[0].x = -1.0;
  }
