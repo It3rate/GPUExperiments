@@ -13,31 +13,40 @@ layout (std430, binding = 1) buffer VertexBuffer {
 };
 
 struct Store {
-   int  storeId;
-   int  count; 
-   int  seriesType;
-   int  seriesIndex;
-   int  samplerType; 
+   uint storeId;
+   uint seriesType;
+   uint seriesIndex;
+   uint samplerIndex; 
+};
+
+struct Sampler {
+   uint type;
+   uint capacity;
+   uint swizzleMap;
+   uint neighborCount;
+   vec4 strides;
+   vec4 params0;
 };
 
 struct Composite {
-   int  id;
-   int  parentId;
-   int  childIdsIndex;
-   int  elementCount; 
-   int  nestedElementCounts; 
-   int  elementCapacity; 
-   Store props[32];
+   uint id;
+   uint parentId;
+   uint childIdsIndex;
+   uint elementCount; 
+   uint nestedElementCounts; 
+   uint elementCapacity; 
+   uint propTypes[32];
+   Store propStores[32];
 };
 
 layout(std430, binding = 2) buffer FloatSeriesBuffer {
-	int[256] floatSeriesOffsets;
-	int[256] floatSeriesLengths;
+	uint[256] floatSeriesOffsets;
+	uint[256] floatSeriesLengths;
 	float[] floatSeriesValues;
 };
 layout(std430, binding = 3) buffer IntSeriesBuffer {
-	int[256] intSeriesOffsets;
-	int[256] intSeriesLengths;
+	uint[256] intSeriesOffsets;
+	uint[256] intSeriesLengths;
 	int[] intSeriesValues;
 };
 
