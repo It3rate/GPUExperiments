@@ -65,8 +65,9 @@ namespace GPUExperiments
 
 	        _indirect = GL.GenBuffer();
 	        GL.BindBuffer(BufferTarget.DrawIndirectBuffer, _indirect);
-	        var pts = new DrawArraysIndirectCommand(_triangleCount * 3, 1);
-	        GL.BufferData(BufferTarget.DrawIndirectBuffer, DrawArraysIndirectCommand.Stride, ref pts, BufferUsageHint.StaticDraw);
+            uint vertCount = _triangleCount * 3;
+	        var pts = new DrawArraysIndirectCommand(vertCount, 1); // vertCount, instCount 
+	        GL.BufferData(BufferTarget.DrawIndirectBuffer, DrawArraysIndirectCommand.Stride, ref pts, BufferUsageHint.DynamicDraw);
 
 	        GL.BindBufferBase(BufferRangeTarget.ShaderStorageBuffer, 1, _vbo); // Buffer Binding 1
 
