@@ -75,7 +75,7 @@ namespace GPUExperiments
 	        _gl.Invalidate();
         }
 
-        private uint _triangleCount = 36;
+        private uint _triangleCount = 12 * 3;
         private int _indirect;
         private int _vbo;
         private int _vba;
@@ -85,7 +85,7 @@ namespace GPUExperiments
 	        GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
 
             _computeShader.Use();
-            GL.DispatchCompute(_triangleCount / 3, 3, 1);
+            GL.DispatchCompute(1, 1, 1);
 
 			GL.MemoryBarrier(MemoryBarrierFlags.AllBarrierBits);
 
