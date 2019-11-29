@@ -47,6 +47,17 @@ layout(std430, binding = 3) buffer IntSeriesBuffer {
 	float y = floor(index / rowCol.x) / (rowCol.y - 1.0f);
 	return vec4(x,y,1,1);
  }
+ vec4 hexGridSample(ivec4 rowCol, uint index)
+ {
+	uint yIndex = uint(floor(index / rowCol.x));
+	float y = yIndex / (rowCol.y - 1.0f);
+	float oddRow = mod(yIndex, 2 ) == 0 ? 0 : 1.0;
+	float xStep = 1.0 / (rowCol.x - 1.0f);
+	float x = (index % rowCol.x) * xStep + oddRow * xStep / 2.0;
+	return vec4(x,y,1,1);
+ }
+ const float PI = 3.1415926535897932384626433832795;
+ const float PIx2 = PI * 2.0f;
 
  void main() 
  {
@@ -56,21 +67,41 @@ layout(std430, binding = 3) buffer IntSeriesBuffer {
 	int capacity = rowCol.x * rowCol.y * rowCol.z * rowCol.w;
 	vec2 bl = vec2(-0.8, -0.8);
 	vec2 tr = vec2(0.8, 0.8);
+	vec2 radius = vec2(0.04f, 0.04f);
+	int sideCount = 6;
 
-	uint startIndex = index * 3;
+	uint startIndex = index * (sideCount * 3);
 //	float offsetX = mix(xRange.x, xRange.y, (index % rowCol.x) / (rowCol.x - 1.0f));
 //	float offsetY = mix(yRange.x, yRange.y, floor(index / rowCol.x) / (rowCol.y - 1.0f));
-	vec4 offset4 = gridSample(rowCol, index);
+	vec4 offset4 = hexGridSample(rowCol, index);
 	vec2 offset = mix(bl, tr, offset4.xy);
 	float offsetX = offset.x;
 	float offsetY = offset.y;
 
+	float pt = float(sideCount - 1) / float(sideCount);
+	for(int i = 0 ; i < sideCount; i++)
+	{
+		float t = i / float(sideCount);
+		float px = sin(pt * PIx2) * radius.x;
+		float py = cos(pt * PIx2) * radius.y;
+		float xp = sin(t  * PIx2) * radius.x;
+		float yp = cos(t  * PIx2) * radius.y;
+		uint idx = startIndex + i * 3;
+		verts[idx + 0].location = vec4(offsetX, offsetY, 0, 1.0);
+		verts[idx + 1].location = vec4(xp + offsetX, yp + offsetY, 0, 1.0);
+		verts[idx + 2].location = vec4(px + offsetX, py + offsetY, 0, 1.0);
 
-	verts[startIndex + 0].location = vec4(-0.1f + offsetX, -0.1f + offsetY, 0, 1.0);
-	verts[startIndex + 1].location = vec4(+0.1f + offsetX, -0.1f + offsetY, 0, 1.0);
-	verts[startIndex + 2].location = vec4(+0.0f + offsetX, +0.1f + offsetY, 0, 1.0);
+		verts[idx + 0].color = vec4(1.0, 0.8, 0.3, 1.0);
+		verts[idx + 1].color = vec4(0.5, 0.2, 0.0, 1.0);
+		verts[idx + 2].color = vec4(0.5, 0.2, 0.0, 1.0);
+		pt = t;
+	}
+
+//	verts[startIndex + 0].location = vec4(-0.05f + offsetX, -0.05f + offsetY, 0, 1.0);
+//	verts[startIndex + 1].location = vec4(+0.05f + offsetX, -0.05f + offsetY, 0, 1.0);
+//	verts[startIndex + 2].location = vec4(+0.00f + offsetX, +0.05f + offsetY, 0, 1.0);
 											    
-	verts[startIndex + 0].color = vec4(1.0, 0.8, 0.3, 1.0);
-	verts[startIndex + 1].color = vec4(offsetX + 0.5, 0.1, 0.0, 1.0);
-	verts[startIndex + 2].color = vec4(0.1, 0.4, offsetY + 0.5, 1.0);
+//	verts[startIndex + 0].color = vec4(1.0, 0.8, 0.3, 1.0);
+//	verts[startIndex + 1].color = vec4(offsetX + 0.5, 0.1, 0.0, 1.0);
+//	verts[startIndex + 2].color = vec4(0.1, 0.4, offsetY + 0.5, 1.0);
  }

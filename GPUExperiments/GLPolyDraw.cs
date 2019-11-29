@@ -47,10 +47,11 @@ namespace GPUExperiments
                 new PolyVertex(+0.0f, +0.5f, Color.Blue)
             };
 
+	        uint vertexCount = _triangleCount * sideCount * 3;
 
             _vbo = GL.GenBuffer();
             GL.BindBuffer(BufferTarget.ArrayBuffer, _vbo);
-            GL.BufferData(BufferTarget.ArrayBuffer, (int)_triangleCount * 3 * PolyVertex.ByteSize, IntPtr.Zero, BufferUsageHint.StaticDraw);
+            GL.BufferData(BufferTarget.ArrayBuffer, (int)vertexCount * PolyVertex.ByteSize, IntPtr.Zero, BufferUsageHint.StaticDraw);
             //GL.BufferData(BufferTarget.ArrayBuffer, data.Length * PolyVertex.ByteSize, data, BufferUsageHint.StaticDraw);
             GL.BindBuffer(BufferTarget.ArrayBuffer, 0);
 
@@ -65,8 +66,7 @@ namespace GPUExperiments
 
 	        _indirect = GL.GenBuffer();
 	        GL.BindBuffer(BufferTarget.DrawIndirectBuffer, _indirect);
-            uint vertCount = _triangleCount * 3;
-	        var pts = new DrawArraysIndirectCommand(vertCount, 1); // vertCount, instCount 
+	        var pts = new DrawArraysIndirectCommand(vertexCount, 1); // vertCount, instCount 
 	        GL.BufferData(BufferTarget.DrawIndirectBuffer, DrawArraysIndirectCommand.Stride, ref pts, BufferUsageHint.DynamicDraw);
 
 	        GL.BindBufferBase(BufferRangeTarget.ShaderStorageBuffer, 1, _vbo); // Buffer Binding 1
@@ -75,7 +75,8 @@ namespace GPUExperiments
 	        _gl.Invalidate();
         }
 
-        private uint _triangleCount = 22*22;
+        uint sideCount = 6;
+        private uint _triangleCount = 22* 22;
         private int _indirect;
         private int _vbo;
         private int _vba;
