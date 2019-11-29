@@ -1,12 +1,37 @@
 ﻿#version 430
 
- layout (local_size_x = 1, local_size_y = 1) in; 
+layout (local_size_x = 1, local_size_y =1) in; 
 
- layout (std140, binding = 1) buffer VertexBuffer {
-   vec2 verts [];
+struct PolyVertex {
+   vec4  location; 
+   vec4  color; 
 };
+
+layout (std430, binding = 1) buffer VertexBuffer {
+   PolyVertex verts [];
+};
+
 
  void main() 
  { 
-	 verts[0].x = -1.0;
+	vec2 dims = gl_NumWorkGroups.xy * gl_WorkGroupSize.xy;
+	vec2 nwg = gl_NumWorkGroups.xy;
+	float totalTriangles = float(gl_NumWorkGroups.x * gl_NumWorkGroups.y);
+	uint startIndex = gl_GlobalInvocationID.x * 3;
+	float y = float(gl_GlobalInvocationID.y);
+
+//	verts[startIndex].location = vec2(startIndex / totalTriangles, 0);// floor(startIndex / 10.0) / 10.0);
+//	verts[startIndex + 1].location = vec2(startIndex / totalTriangles + 0.1, 0.5);
+//	verts[startIndex + 2].location = vec2(startIndex / totalTriangles - 0.1, -0.5);
+
+	//verts[startIndex + 0].location = vec4(0.0f, 0.0f, 0, 0);
+	float xoffset = gl_GlobalInvocationID.x / float(gl_NumWorkGroups.x) - 0.5f;
+	float yoffset = gl_WorkGroupID.y / float(gl_NumWorkGroups.y) - 0.5f;//startIndex / totalTriangles - 0.5f;//
+	verts[startIndex + 0].location = vec4(-0.5f + xoffset, -0.5f + yoffset, 0, 1.0);//startIndex / totalTriangles, 0);// floor(startIndex / 10.0) / 10.0);
+	verts[startIndex + 1].location = vec4(+0.5f + xoffset, -0.5f + yoffset, 0, 1.0);//startIndex / totalTriangles + 0.1, 0.5);
+	verts[startIndex + 2].location = vec4(+0.0f + xoffset, +0.5f + yoffset, 0, 1.0);//startIndex / totalTriangles - 0.1, -0.5);
+											    
+	verts[startIndex + 0].color = vec4(1.0,0.0, 0.6, 1.0);
+	verts[startIndex + 1].color = vec4(0.0,0.5, 0.0, 1.0);
+	verts[startIndex + 2].color = vec4(0.0,0.0, 0.5, 1.0);
  }
