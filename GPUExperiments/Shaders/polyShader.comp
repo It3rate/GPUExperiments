@@ -12,6 +12,17 @@ layout (std430, binding = 1) buffer VertexBuffer {
    PolyVertex verts [];
 };
 
+layout(std430, binding = 2) buffer FloatSeriesBuffer {
+	uint[256] floatSeriesOffsets;
+	uint[256] floatSeriesLengths;
+	float floatSeriesValues[];
+};
+layout(std430, binding = 3) buffer IntSeriesBuffer {
+	uint[256] intSeriesOffsets;
+	uint[256] intSeriesLengths;
+	int intSeriesValues[];
+};
+
 struct Store {
    uint storeId;
    uint seriesType;
@@ -39,16 +50,6 @@ struct Composite {
    Store propStores[32];
 };
 
-layout(std430, binding = 2) buffer FloatSeriesBuffer {
-	uint[256] floatSeriesOffsets;
-	uint[256] floatSeriesLengths;
-	float[] floatSeriesValues;
-};
-layout(std430, binding = 3) buffer IntSeriesBuffer {
-	uint[256] intSeriesOffsets;
-	uint[256] intSeriesLengths;
-	int[] intSeriesValues;
-};
 
  vec4 gridSample(ivec4 rowCol, uint index)
  {
@@ -74,36 +75,34 @@ layout(std430, binding = 3) buffer IntSeriesBuffer {
 	
 	ivec4 rowCol = ivec4(22, 22, 1, 1);
 	int capacity = rowCol.x * rowCol.y * rowCol.z * rowCol.w;
-	vec2 bl = vec2(-0.8, -0.8);
-	vec2 tr = vec2(0.8, 0.8);
+	vec4 box = vec4(-0.8, -0.8, 0.8, 0.8);
 	vec2 radius = vec2(0.04f, 0.04f);
 	int sideCount = 6;
 
 	uint startIndex = index * (sideCount * 3);
-//	float offsetX = mix(xRange.x, xRange.y, (index % rowCol.x) / (rowCol.x - 1.0f));
-//	float offsetY = mix(yRange.x, yRange.y, floor(index / rowCol.x) / (rowCol.y - 1.0f));
 	vec4 offset4 = hexGridSample(rowCol, index);
-	vec2 offset = mix(bl, tr, offset4.xy);
-	float offsetX = offset.x;
-	float offsetY = offset.y;
+	vec2 offset = mix(box.xy, box.zw, offset4.xy);
 
 	float pt = float(sideCount - 1) / float(sideCount);
+	float px = sin(pt * PIx2) * radius.x;
+	float py = cos(pt * PIx2) * radius.y;
+	vec4 outColor = vec4(0.5, 0.2, 0.0, 1.0);
 	for(int i = 0 ; i < sideCount; i++)
 	{
 		float t = i / float(sideCount);
-		float px = sin(pt * PIx2) * radius.x;
-		float py = cos(pt * PIx2) * radius.y;
-		float xp = sin(t  * PIx2) * radius.x;
-		float yp = cos(t  * PIx2) * radius.y;
+		float x = sin(t * PIx2) * radius.x;
+		float y = cos(t * PIx2) * radius.y;
 		uint idx = startIndex + i * 3;
-		verts[idx + 0].location = vec4(offsetX, offsetY, 0, 1.0);
-		verts[idx + 1].location = vec4(xp + offsetX, yp + offsetY, 0, 1.0);
-		verts[idx + 2].location = vec4(px + offsetX, py + offsetY, 0, 1.0);
+		verts[idx + 0].location = vec4(offset.x, offset.y, 0, 1.0);
+		verts[idx + 1].location = vec4(x + offset.x, y + offset.y, 0, 1.0);
+		verts[idx + 2].location = vec4(px + offset.x, py + offset.y, 0, 1.0);
 
-		verts[idx + 0].color = vec4(1.0, 0.8, 0.3, 1.0);
-		verts[idx + 1].color = vec4(0.5, 0.2, 0.0, 1.0);
-		verts[idx + 2].color = vec4(0.5, 0.2, 0.0, 1.0);
+		verts[idx + 0].color = vec4(index / float(capacity), 0.7, 0.8, 1.0);
+		verts[idx + 1].color = outColor;
+		verts[idx + 2].color = outColor;
 		pt = t;
+		px = x;
+		py = y;
 	}
 
 //	verts[startIndex + 0].location = vec4(-0.05f + offsetX, -0.05f + offsetY, 0, 1.0);

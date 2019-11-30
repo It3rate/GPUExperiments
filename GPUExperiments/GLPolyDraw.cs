@@ -34,7 +34,9 @@ namespace GPUExperiments
 
         private void glControl1_Load(object sender, EventArgs e)
         {
-	        GL.ClearColor(0.2f, 0.0f, 0.0f, 1f);
+            int maxVertexUniformComponents = GL.GetInteger(GetPName.MaxVertexUniformComponents);
+
+            GL.ClearColor(0.2f, 0.0f, 0.0f, 1f);
 	        GL.Enable(EnableCap.DepthTest);
 
 	        _vfShader = new VertexFragmentShader("Shaders/polyShader.vert", "Shaders/polyShader.frag");
