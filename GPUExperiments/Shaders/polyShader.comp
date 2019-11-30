@@ -68,7 +68,7 @@ struct Composite {
  }
  const float PI = 3.1415926535897932384626433832795;
  const float PIx2 = PI * 2.0f;    
- const  float floatSeries[16] = float[] (0.3, 0.1, 0.0, 1.0,    0.1, 0.5, 1.0, 1.0,    1.0, 1.0, 0.0, 1.0,   1.0, 0.0, 0.1, 1.0);
+ const float floatSeries[16] = float[] (0.3, 0.1, 0.0, 1.0,    0.0, 0.4, 1.0, 1.0,    1.0, 1.0, 0.0, 1.0,   1.0, 0.0, 0.1, 1.0);
 
  vec4 getMixWrapped4(int start, int len, float t)
  {
