@@ -34,7 +34,8 @@ namespace GPUExperiments
 
         private void glControl1_Load(object sender, EventArgs e)
         {
-            int maxVertexUniformComponents = GL.GetInteger(GetPName.MaxVertexUniformComponents);
+	        int maxVertexUniformComponents = GL.GetInteger(GetPName.MaxVertexUniformComponents);
+	        int maxTextureBufferSize = GL.GetInteger(GetPName.MaxTextureBufferSize);
 
             GL.ClearColor(0.2f, 0.0f, 0.0f, 1f);
 	        GL.Enable(EnableCap.DepthTest);
