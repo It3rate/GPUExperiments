@@ -55,8 +55,8 @@ namespace GPUExperiments
             _vbo = GL.GenBuffer();
             GL.BindBuffer(BufferTarget.ArrayBuffer, _vbo);
             GL.BufferData(BufferTarget.ArrayBuffer, (int)vertexCount * PolyVertex.ByteSize, IntPtr.Zero, BufferUsageHint.StaticDraw);
-            //GL.BufferData(BufferTarget.ArrayBuffer, data.Length * PolyVertex.ByteSize, data, BufferUsageHint.StaticDraw);
             GL.BindBuffer(BufferTarget.ArrayBuffer, 0);
+            GL.BindBufferBase(BufferRangeTarget.ShaderStorageBuffer, 1, _vbo);
 
             _vba = GL.GenVertexArray();
             GL.BindBuffer(BufferTarget.ArrayBuffer, _vbo);
@@ -67,12 +67,16 @@ namespace GPUExperiments
             GL.EnableVertexAttribArray(1);
             GL.BindVertexArray(0);
 
-	        _indirect = GL.GenBuffer();
-	        GL.BindBuffer(BufferTarget.DrawIndirectBuffer, _indirect);
-	        var pts = new DrawArraysIndirectCommand(vertexCount, 1); // vertCount, instCount 
-	        GL.BufferData(BufferTarget.DrawIndirectBuffer, DrawArraysIndirectCommand.Stride, ref pts, BufferUsageHint.DynamicDraw);
-
-	        GL.BindBufferBase(BufferRangeTarget.ShaderStorageBuffer, 1, _vbo); // Buffer Binding 1
+            _indirect = GL.GenBuffer();
+            GL.BindBuffer(BufferTarget.DrawIndirectBuffer, _indirect);
+            var pts = new DrawArraysIndirectCommand(vertexCount, 1); // vertCount, instCount 
+            GL.BufferData(BufferTarget.DrawIndirectBuffer, DrawArraysIndirectCommand.Stride, ref pts, BufferUsageHint.DynamicDraw);
+  
+            _programState = GL.GenBuffer();
+            GL.BindBuffer(BufferTarget.UniformBuffer, _programState);
+            GL.BufferData(BufferTarget.UniformBuffer, _state.ByteSize, _state.Buffer, BufferUsageHint.DynamicRead);
+            GL.BindBuffer(BufferTarget.UniformBuffer, 0);
+            GL.BindBufferBase(BufferRangeTarget.ShaderStorageBuffer, 2, _programState);// Buffer Binding 2
 
             _loaded = true;
 	        _gl.Invalidate();
@@ -83,29 +87,66 @@ namespace GPUExperiments
         private int _indirect;
         private int _vbo;
         private int _vba;
+        private int _counter = 0;
+        private int _programState;
+        private ProgramState _state = new ProgramState(0,0,1,new int[]{0});
+
         private void glControl1_Paint(object sender, PaintEventArgs e)
         {
 	        if (!_loaded) return;
 	        GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
 
             _computeShader.Use();
+            _state.CurrentTicks = _counter++;
+            GL.BindBuffer(BufferTarget.UniformBuffer, _programState);
+            GL.BufferData(BufferTarget.UniformBuffer, _state.ByteSize, _state.Buffer, BufferUsageHint.DynamicRead);
             GL.DispatchCompute(_triangleCount, 1, 1);
 
 			GL.MemoryBarrier(MemoryBarrierFlags.AllBarrierBits);
 
             _vfShader.Use();
-	        GL.BindBuffer(BufferTarget.ArrayBuffer, _vbo);
 	        GL.BindVertexArray(_vba);
             GL.DrawArraysIndirect(PrimitiveType.Triangles, IntPtr.Zero);
 
 	        _gl.SwapBuffers();
+            _gl.Invalidate();
         }
         private void glControl1_Resize(object sender, EventArgs e)
         {
         }
     }
 
-
+    public struct ProgramState
+    {
+        public int CurrentTicks;
+        public int PreviousTicks;
+        public int TotalElementCount;
+        public int[] ActiveElementIds;
+        public ProgramState(int currentTicks, int previousTicks, int totalElementCount, int[] activeElementIds)
+        {
+            CurrentTicks = currentTicks;
+            PreviousTicks = previousTicks;
+            TotalElementCount = totalElementCount;
+            ActiveElementIds = activeElementIds ?? new int[]{};
+        }
+        public int Size => 3 + ActiveElementIds.Length;
+        public int ByteSize => sizeof(float) * Size;
+        public int[] Buffer
+        {
+            get
+            {
+                int[] result = new int[Size];
+                result[0] = CurrentTicks;
+                result[1] = PreviousTicks;
+                result[2] = TotalElementCount;
+                for (int i = 0; i < ActiveElementIds.Length; i++)
+                {
+                    result[3 + i] = ActiveElementIds[i];
+                }
+                return result;
+            }
+        }
+    }
     public struct PolyVertex
     {
 	    public Vector4 Location;
