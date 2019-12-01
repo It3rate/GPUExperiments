@@ -29,7 +29,10 @@ namespace GPUExperiments.Common
 
         protected int CreateShaderFromPath(string path, ShaderType shaderType)
         {
-            var src = LoadSource(path);
+            string src = "";
+            src = AppendSource("Shaders/floatSeries.glsl", src) + "\r\n";
+            src = AppendSource("Shaders/intSeries.glsl", src) + "\r\n";
+            src = AppendSource(path, src);
             var shaderId = GL.CreateShader(shaderType);
             GL.ShaderSource(shaderId, src);
             CompileShader(shaderId);
@@ -156,12 +159,23 @@ namespace GPUExperiments.Common
                 GL.DeleteShader(shaderIds[i]);
             }
         }
-        protected static string LoadSource(string path)
+        protected static string AppendSource(string path, string src)
         {
             using (var sr = new StreamReader(path, Encoding.UTF8))
             {
-                return sr.ReadToEnd();
+                string readSource = sr.ReadToEnd();
+                if (src.StartsWith("#version") && readSource.StartsWith("#version"))
+                {
+                    int fll = readSource.IndexOf("\n") + 1;
+                    src += readSource.Substring(fll, readSource.Length - fll);
+                }
+                else
+                {
+                    src += readSource;
+                }
             }
+
+            return src;
         }
 
 

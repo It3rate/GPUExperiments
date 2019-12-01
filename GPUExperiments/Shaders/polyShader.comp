@@ -19,16 +19,17 @@ layout(std430, binding = 2) buffer ProgramState {
    float activeElementIds[];
 };
 
-layout(std430, binding = 3) buffer FloatSeriesBuffer {
-	uint[256] floatSeriesOffsets;
-	uint[256] floatSeriesLengths;
-	float floatSeriesValues[];
-};
-layout(std430, binding = 4) buffer IntSeriesBuffer {
-	uint[256] intSeriesOffsets;
-	uint[256] intSeriesLengths;
-	int intSeriesValues[];
-};
+//layout(std430, binding = 3) buffer FloatSeriesBuffer {
+//	uint[256] floatSeriesOffsets;
+//	uint[256] floatSeriesLengths;
+//	float floatSeriesValues[];
+//};
+
+//layout(std430, binding = 4) buffer IntSeriesBuffer {
+//	uint[256] intSeriesOffsets;
+//	uint[256] intSeriesLengths;
+//	int intSeriesValues[];
+//};
 
 struct Store {
    uint storeId;
