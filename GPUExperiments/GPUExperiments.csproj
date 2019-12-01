@@ -109,6 +109,7 @@
     <None Include="Shaders\basic.vert">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
+    <None Include="Shaders\floatSeries.glsl" />
     <None Include="Shaders\polyShader.comp">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
