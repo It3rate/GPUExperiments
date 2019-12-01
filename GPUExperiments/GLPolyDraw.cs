@@ -5,10 +5,12 @@ using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
+using System.Timers;
 using System.Windows.Forms;
 using GPUExperiments.Common;
 using OpenTK;
 using OpenTK.Graphics.OpenGL4;
+using Timer = System.Windows.Forms.Timer;
 
 namespace GPUExperiments
 {
@@ -19,6 +21,7 @@ namespace GPUExperiments
 	    private ComputeShader _computeShader;
         private GLControl _gl;
 	    private bool _loaded;
+        private System.Timers.Timer _timer;
 
 	    public GLPolyDraw(GLControl control)
 	    {
@@ -30,7 +33,17 @@ namespace GPUExperiments
 		    _gl.Load += glControl1_Load;
 		    _gl.Paint += glControl1_Paint;
 		    _gl.Resize += glControl1_Resize;
-	    }
+
+            _timer = new System.Timers.Timer();
+            _timer.Elapsed += Tick;
+            _timer.Interval = 60;
+            _timer.Enabled = true;
+        }
+
+        private void Tick(object sender, ElapsedEventArgs e)
+        {
+            _gl.Invalidate();
+        }
 
         private void glControl1_Load(object sender, EventArgs e)
         {
@@ -109,7 +122,6 @@ namespace GPUExperiments
             GL.DrawArraysIndirect(PrimitiveType.Triangles, IntPtr.Zero);
 
 	        _gl.SwapBuffers();
-            _gl.Invalidate();
         }
         private void glControl1_Resize(object sender, EventArgs e)
         {
