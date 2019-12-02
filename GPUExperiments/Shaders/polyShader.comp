@@ -12,15 +12,13 @@ layout (std430, binding = 1) buffer VertexBuffer {
    PolyVertex verts [];
 };
 
-layout(std430, binding = 2) buffer FloatSeriesBuffer {
-	uint[256] floatSeriesOffsets;
-	uint[256] floatSeriesLengths;
-	float floatSeriesValues[];
-};
-layout(std430, binding = 3) buffer IntSeriesBuffer {
-	uint[256] intSeriesOffsets;
-	uint[256] intSeriesLengths;
-	int intSeriesValues[];
+layout(std430, binding = 2) buffer ProgramState {
+   uint currentTicks;
+   uint previousTicks;
+   uint totalElementCount;
+   uint floatSeriesStartIndex;
+   uint intSeriesStartIndex;
+   uint activeElementIds[];
 };
 
 struct Store {
@@ -116,23 +114,14 @@ struct Composite {
 		verts[idx + 2].location = vec4(px + offset.x, py + offset.y, 0, 1.0);
 
 		float indexT = index / float(capacity);
-		vec4 col = getMixWrapped4(0, 3, indexT);
-		vec4 outColor = getMixWrapped4(1, 3, 1.0f - indexT);
-		//vec4 col = mix(cols[0], cols[1], indexT);
-		//vec4 outColor = mix(cols[1], cols[0], indexT);
-		verts[idx + 0].color = col;
+		float time = abs(mod(currentTicks, 100) / 50.0f - 1.0f);
+		vec4 col = getLerp4(0, indexT);
+		vec4 outColor = getLerp4(1, fract(indexT - currentTicks / 50.0));
+		verts[idx + 0].color =  vec4(col.xyz, 1.0);
 		verts[idx + 1].color = outColor;
 		verts[idx + 2].color = outColor;
 		pt = t;
 		px = x;
 		py = y;
 	}
-
-//	verts[startIndex + 0].location = vec4(-0.05f + offsetX, -0.05f + offsetY, 0, 1.0);
-//	verts[startIndex + 1].location = vec4(+0.05f + offsetX, -0.05f + offsetY, 0, 1.0);
-//	verts[startIndex + 2].location = vec4(+0.00f + offsetX, +0.05f + offsetY, 0, 1.0);
-											    
-//	verts[startIndex + 0].color = vec4(1.0, 0.8, 0.3, 1.0);
-//	verts[startIndex + 1].color = vec4(offsetX + 0.5, 0.1, 0.0, 1.0);
-//	verts[startIndex + 2].color = vec4(0.1, 0.4, offsetY + 0.5, 1.0);
  }
