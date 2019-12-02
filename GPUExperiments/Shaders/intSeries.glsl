@@ -1,6 +1,6 @@
 ﻿#version 430
 
-layout(std430, binding = 4) buffer intSeriesBuffer {
+layout(std430, binding = 5) buffer intSeriesBuffer {
 	uint[256] intSeriesOffsets;
 	uint[256] intSeriesLengths;
 	int intSeriesValues[];
