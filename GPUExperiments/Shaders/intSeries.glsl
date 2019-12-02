@@ -13,32 +13,29 @@ int intAt(uint seriesIndex, uint index)
 	return intSeriesValues[seriesAddress + index];
 }
 
-ivec2 ivec2At(uint seriesIndex, uint index)
+void ivecAt(uint seriesIndex, uint index, inout ivec2 result)
 {
 	uint seriesAddress = intSeriesOffsets[seriesIndex];
 	uint startAddress = seriesAddress + index * 2;
-	return ivec2(
-		intSeriesValues[startAddress + 0],
-		intSeriesValues[startAddress + 1]);
+	result.x = intSeriesValues[startAddress + 0];
+	result.y = intSeriesValues[startAddress + 1];
 }
-ivec3 ivec3At(uint seriesIndex, uint index)
+void ivecAt(uint seriesIndex, uint index, inout ivec3 result)
 {
 	uint seriesAddress = intSeriesOffsets[seriesIndex];
 	uint startAddress = seriesAddress + index * 3;
-	return ivec3(
-		intSeriesValues[startAddress + 0],
-		intSeriesValues[startAddress + 1],
-		intSeriesValues[startAddress + 2]);
+	result.x = intSeriesValues[startAddress + 0];
+	result.y = intSeriesValues[startAddress + 1];
+	result.z = intSeriesValues[startAddress + 2];
 }
-ivec4 ivec4At(uint seriesIndex, uint index)
+void ivecAt(uint seriesIndex, uint index, inout ivec4 result)
 {
 	uint seriesAddress = intSeriesOffsets[seriesIndex];
 	uint startAddress = seriesAddress + index * 4;
-	return ivec4(
-		intSeriesValues[startAddress + 0],
-		intSeriesValues[startAddress + 1],
-		intSeriesValues[startAddress + 2],
-		intSeriesValues[startAddress + 3]);
+	result.x = intSeriesValues[startAddress + 0];
+	result.y = intSeriesValues[startAddress + 1];
+	result.z = intSeriesValues[startAddress + 2];
+	result.w = intSeriesValues[startAddress + 3];
 }
 
 

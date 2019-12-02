@@ -36,12 +36,11 @@ float getIndexRemainder(uint seriesIndex, uint vecSize, float t, out uint startI
 	return result;
 }
 
-vec2 getLerp2(uint seriesIndex, float t)
+void getLerp(uint seriesIndex, float t, inout vec2 result)
 {
 	uint startIndex, endIndex;
 	float rem = getIndexRemainder(seriesIndex, 2, t, startIndex, endIndex);
 
-	vec2 result;
 	uint size = 2;
 	uint seriesAddress = dataPointers[seriesIndex].startAddress;
 	uint startByte = seriesAddress + startIndex * size;
@@ -50,14 +49,12 @@ vec2 getLerp2(uint seriesIndex, float t)
 	{
 		result[i] = mix(floatSeriesValues[startByte + i], floatSeriesValues[endByte + i], rem);
 	}
-	return result;
 }
-vec3 getLerp3(uint seriesIndex, float t)
+void getLerp(uint seriesIndex, float t, inout vec3 result)
 {
 	uint startIndex, endIndex;
 	float rem = getIndexRemainder(seriesIndex, 3, t, startIndex, endIndex);
 
-	vec3 result;
 	uint size = 3;
 	uint seriesAddress = dataPointers[seriesIndex].startAddress;
 	uint startByte = seriesAddress + startIndex * size;
@@ -66,17 +63,12 @@ vec3 getLerp3(uint seriesIndex, float t)
 	{
 		result[i] = mix(floatSeriesValues[startByte + i], floatSeriesValues[endByte + i], rem);
 	}
-	return result;
 }
-vec4 getLerp4(uint seriesIndex, float t)
+void getLerp(uint seriesIndex, float t, inout vec4 result)
 {
 	uint startIndex, endIndex;
 	float rem = getIndexRemainder(seriesIndex, 4, t, startIndex, endIndex);
 
-	//startIndex = 2;
-	//endIndex = 3;
-	//rem = 0.5f;
-	vec4 result;
 	uint size = 4;
 	uint seriesAddress = dataPointers[seriesIndex].startAddress;
 	uint startByte = seriesAddress + startIndex * size;
@@ -85,7 +77,6 @@ vec4 getLerp4(uint seriesIndex, float t)
 	{
 		result[i] = mix(floatSeriesValues[startByte + i], floatSeriesValues[endByte + i], rem);
 	}
-	return result;
 }
 
 
@@ -95,32 +86,30 @@ float floatAt(uint seriesIndex, uint index)
 	return floatSeriesValues[seriesAddress + index];
 }
 
-vec2 vec2At(uint seriesIndex, uint index)
+void vecAt(uint seriesIndex, uint index, inout vec2 result)
 {
 	uint seriesAddress = dataPointers[seriesIndex].startAddress;
 	uint startAddress = seriesAddress + index * 2;
-	return vec2(
-		floatSeriesValues[startAddress + 0],
-		floatSeriesValues[startAddress + 1]);
+	result.x = floatSeriesValues[startAddress + 0];
+	result.y = floatSeriesValues[startAddress + 1];
 }
-vec3 vec3At(uint seriesIndex, uint index)
+void vecAt(uint seriesIndex, uint index, inout vec3 result)
 {
 	uint seriesAddress = dataPointers[seriesIndex].startAddress;
 	uint startAddress = seriesAddress + index * 3;
-	return vec3(
-		floatSeriesValues[startAddress + 0],
-		floatSeriesValues[startAddress + 1],
-		floatSeriesValues[startAddress + 2]);
+
+	result.x = floatSeriesValues[startAddress + 0];
+	result.y = floatSeriesValues[startAddress + 1];
+	result.z = floatSeriesValues[startAddress + 2];
 }
-vec4 vec4At(uint seriesIndex, uint index)
+void vecAt(uint seriesIndex, uint index, inout vec4 result)
 {
 	uint seriesAddress = dataPointers[seriesIndex].startAddress;
 	uint startAddress = seriesAddress + index * 4;
-	return vec4(
-		floatSeriesValues[startAddress + 0],
-		floatSeriesValues[startAddress + 1],
-		floatSeriesValues[startAddress + 2],
-		floatSeriesValues[startAddress + 3]);
+	result.x = floatSeriesValues[startAddress + 0];
+	result.y = floatSeriesValues[startAddress + 1];
+	result.z = floatSeriesValues[startAddress + 2];
+	result.w = floatSeriesValues[startAddress + 3];
 }
 
 

@@ -115,8 +115,10 @@ struct Composite {
 
 		float indexT = index / float(capacity);
 		float time = abs(mod(currentTicks, 100) / 50.0f - 1.0f);
-		vec4 col = getLerp4(2, indexT);
-		vec4 outColor = getLerp4(2, fract(indexT - currentTicks / 500.0f));
+		vec4 col;
+		vec4 outColor;
+		getLerp(2, indexT, col);
+		 getLerp(2, fract(indexT - currentTicks / 500.0f), outColor);
 		verts[idx + 0].color =  vec4(col.xyz, 1.0);
 		verts[idx + 1].color = outColor;
 		verts[idx + 2].color = outColor;
