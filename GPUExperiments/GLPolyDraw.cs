@@ -85,7 +85,7 @@ namespace GPUExperiments
 
             _programState = GL.GenBuffer();
             GL.BindBuffer(BufferTarget.UniformBuffer, _programState);
-            GL.BufferData(BufferTarget.UniformBuffer, _state.ByteSize, _state.Buffer, BufferUsageHint.DynamicRead);
+            GL.BufferData(BufferTarget.UniformBuffer, _state.ByteSize, ref _state, BufferUsageHint.DynamicRead);
             GL.BindBuffer(BufferTarget.UniformBuffer, 0);
             GL.BindBufferBase(BufferRangeTarget.ShaderStorageBuffer, 2, _programState); // Buffer Binding 2
 
@@ -93,7 +93,7 @@ namespace GPUExperiments
                 Color.Red, Color.Orange, Color.Yellow, Color.GreenYellow, Color.Green, Color.Blue, Color.BlueViolet, Color.Violet};
             var data2 = new List<Color>(){
                 Color.DarkRed, Color.DarkOrange, Color.DarkGoldenrod, Color.DarkGreen, Color.DarkCyan, Color.DarkBlue, Color.DarkViolet, Color.DarkMagenta};
-            var seriesData = new FloatSeriesBuffer(ColorsToFloats(data1));
+            seriesData = new FloatSeriesBuffer(ColorsToFloats(data1));
             seriesData.AddSeries(ColorsToFloats(data2));
 
             _floatSeries = GL.GenBuffer();
@@ -118,11 +118,12 @@ namespace GPUExperiments
         private int _indirect;
         private int _vbo;
         private int _vba;
-        private int _counter = 0;
+        private uint _counter = 0;
         private int _programState;
         private int _floatSeries;
+        private FloatSeriesBuffer seriesData;
         private int _pointers;
-        private ProgramState _state = new ProgramState(0, 0, 1, new int[] { 0 });
+        private ProgramState _state = new ProgramState(0, 0, 1, new uint[] { 0 });
 
         private void glControl1_Paint(object sender, PaintEventArgs e)
         {
@@ -130,12 +131,15 @@ namespace GPUExperiments
             GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
 
             _computeShader.Use();
+
             _state.CurrentTicks = _counter++;
+            _state.FloatSeriesStartIndex = 0;
+            _state.IntSeriesStartIndex = (uint)seriesData.PointersSize;
             GL.BindBuffer(BufferTarget.UniformBuffer, _programState);
-            GL.BufferData(BufferTarget.UniformBuffer, _state.ByteSize, _state.Buffer, BufferUsageHint.DynamicRead);
+            GL.BufferData(BufferTarget.UniformBuffer, _state.ByteSize, ref _state, BufferUsageHint.DynamicRead);
             GL.DispatchCompute(_triangleCount, 1, 1);
 
-            GL.MemoryBarrier(MemoryBarrierFlags.AllBarrierBits);
+            //GL.MemoryBarrier(MemoryBarrierFlags.AllBarrierBits);
 
             _vfShader.Use();
             GL.BindVertexArray(_vba);
@@ -239,36 +243,28 @@ public struct PolyVertex
     public static int ByteSize => sizeof(float) * Size;
 }
 
+[StructLayout(LayoutKind.Explicit)]
 public struct ProgramState
 {
-    public int CurrentTicks;
-    public int PreviousTicks;
-    public int TotalElementCount;
-    public int[] ActiveElementIds;
-    public ProgramState(int currentTicks, int previousTicks, int totalElementCount, int[] activeElementIds)
+    [FieldOffset(0)] public uint CurrentTicks;
+    [FieldOffset(4)] public uint PreviousTicks;
+    [FieldOffset(8)] public uint TotalElementCount;
+    [FieldOffset(12)] public uint FloatSeriesStartIndex;
+    [FieldOffset(16)] public uint IntSeriesStartIndex;
+    [FieldOffset(24)] public uint[] ActiveElementIds;
+
+    public ProgramState(uint currentTicks, uint previousTicks, uint totalElementCount, uint[] activeElementIds)
     {
         CurrentTicks = currentTicks;
         PreviousTicks = previousTicks;
         TotalElementCount = totalElementCount;
-        ActiveElementIds = activeElementIds ?? new int[] { };
+        FloatSeriesStartIndex = 0;
+        IntSeriesStartIndex = 0;
+        ActiveElementIds = new uint[] { 0 };
     }
-    public int Size => 3 + ActiveElementIds.Length;
-    public int ByteSize => sizeof(float) * Size;
-    public int[] Buffer
-    {
-        get
-        {
-            int[] result = new int[Size];
-            result[0] = CurrentTicks;
-            result[1] = PreviousTicks;
-            result[2] = TotalElementCount;
-            for (int i = 0; i < ActiveElementIds.Length; i++)
-            {
-                result[3 + i] = ActiveElementIds[i];
-            }
-            return result;
-        }
-    }
+
+    public int Size => 6 + ActiveElementIds.Length;
+    public int ByteSize => sizeof(uint) * Size;
 }
 
 

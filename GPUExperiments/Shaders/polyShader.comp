@@ -13,10 +13,12 @@ layout (std430, binding = 1) buffer VertexBuffer {
 };
 
 layout(std430, binding = 2) buffer ProgramState {
-   int currentTicks;
-   int previousTicks;
-   int totalElementCount;
-   float activeElementIds[];
+   uint currentTicks;
+   uint previousTicks;
+   uint totalElementCount;
+   uint floatSeriesStartIndex;
+   uint intSeriesStartIndex;
+   uint activeElementIds[];
 };
 
 struct Store {
@@ -114,7 +116,7 @@ struct Composite {
 		float indexT = index / float(capacity);
 		float time = abs(mod(currentTicks, 100) / 50.0f - 1.0f);
 		vec4 col = getLerp4(0, indexT);
-		vec4 outColor = getLerp4(1, fract(abs(time - indexT)));
+		vec4 outColor = getLerp4(1, fract(indexT - currentTicks / 50.0));
 		verts[idx + 0].color =  vec4(col.xyz, 1.0);
 		verts[idx + 1].color = outColor;
 		verts[idx + 2].color = outColor;
