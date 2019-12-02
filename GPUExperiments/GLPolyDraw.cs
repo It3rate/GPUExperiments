@@ -22,6 +22,7 @@ namespace GPUExperiments
         private GLControl _gl;
         private bool _loaded;
         private System.Timers.Timer _timer;
+        private static readonly Random rnd = new Random();
 
         public GLPolyDraw(GLControl control)
         {
@@ -93,18 +94,25 @@ namespace GPUExperiments
                 Color.Red, Color.Orange, Color.Yellow, Color.GreenYellow, Color.Green, Color.Blue, Color.BlueViolet, Color.Violet};
             var data2 = new List<Color>(){
                 Color.DarkRed, Color.DarkOrange, Color.DarkGoldenrod, Color.DarkGreen, Color.DarkCyan, Color.DarkBlue, Color.DarkViolet, Color.DarkMagenta};
-            seriesData = new FloatSeriesBuffer(ColorsToFloats(data1));
-            seriesData.AddSeries(ColorsToFloats(data2));
+			var data3 = new List<Color>();
+			for (int i = 0; i < 100; i++)
+			{
+				data3.Add(Color.FromArgb(1, rnd.Next(128,255), rnd.Next(1, 255), (int)(i / 100f * 255)));
+			}
+            seriesData = new FloatSeriesBuffer();
+            seriesData.AddSeries(data1);
+            seriesData.AddSeries(data2);
+            seriesData.AddSeries(data3);
 
             _floatSeries = GL.GenBuffer();
             GL.BindBuffer(BufferTarget.UniformBuffer, _floatSeries);
-            GL.BufferData(BufferTarget.UniformBuffer, seriesData.ValuesByteSize, seriesData.floatSeriesValues, BufferUsageHint.DynamicRead);
+            GL.BufferData(BufferTarget.UniformBuffer, seriesData.ValuesByteSize, seriesData.FlattenedValues, BufferUsageHint.DynamicRead);
             GL.BindBuffer(BufferTarget.UniformBuffer, 0);
             GL.BindBufferBase(BufferRangeTarget.ShaderStorageBuffer, 3, _floatSeries); // Buffer Binding3
 
             _pointers = GL.GenBuffer();
             GL.BindBuffer(BufferTarget.UniformBuffer, _pointers);
-            uint[] pData = seriesData.PointersArray();
+            DataPointer[] pData = seriesData.pointers.ToArray();
             GL.BufferData(BufferTarget.UniformBuffer, seriesData.PointersByteSize, pData, BufferUsageHint.DynamicRead);
             GL.BindBuffer(BufferTarget.UniformBuffer, 0);
             GL.BindBufferBase(BufferRangeTarget.ShaderStorageBuffer, 4, _pointers); // Buffer Binding3
@@ -149,19 +157,6 @@ namespace GPUExperiments
         }
 
 
-        public float[] ColorsToFloats(List<Color> colors)
-        {
-            var result = new float[colors.Count * 4];
-            int index = 0;
-            foreach (var color in colors)
-            {
-                result[index++] = color.R / 255f;
-                result[index++] = color.G / 255f;
-                result[index++] = color.B / 255f;
-                result[index++] = color.A / 255f;
-            }
-            return result;
-        }
 
         private void glControl1_Resize(object sender, EventArgs e)
         {
@@ -169,11 +164,16 @@ namespace GPUExperiments
     }
 }
 
+[StructLayout(LayoutKind.Explicit)]
 public struct DataPointer
 {
+	[FieldOffset(0)]
     public uint Type;
+    [FieldOffset(4)]
     public uint VecSize;
+    [FieldOffset(8)]
     public uint StartAddress;
+    [FieldOffset(12)]
     public uint ByteLength;
 
     public DataPointer(uint type, uint vecSize, uint startAddress, uint byteLength)
@@ -186,43 +186,8 @@ public struct DataPointer
     public static int Size => 4;
     public static int ByteSize => sizeof(float) * Size;
 }
-public class FloatSeriesBuffer
-{
-    List<DataPointer> pointers = new List<DataPointer>();
-    public float[] floatSeriesValues = { };
 
-    public FloatSeriesBuffer(float[] values)
-    {
-        AddSeries(values);
-    }
 
-    private int itemIndex = 0;
-    public void AddSeries(float[] values)
-    {
-        DataPointer p = new DataPointer(0, 4, (uint)floatSeriesValues.Length, (uint)values.Length);
-        pointers.Add(p);
-        floatSeriesValues = floatSeriesValues.Concat(values).ToArray();
-        itemIndex++;
-    }
-
-    public uint[] PointersArray()
-    {
-        var result = new uint[pointers.Count * DataPointer.Size];
-        int index = 0;
-        foreach (var dataPointer in pointers)
-        {
-            result[index++] = dataPointer.Type;
-            result[index++] = dataPointer.VecSize;
-            result[index++] = dataPointer.StartAddress;
-            result[index++] = dataPointer.ByteLength;
-        }
-        return result;
-    }
-    public int ValuesSize => floatSeriesValues.Length;
-    public int ValuesByteSize => ValuesSize * sizeof(float);
-    public int PointersSize => pointers.Count;
-    public int PointersByteSize => DataPointer.ByteSize * PointersSize;
-};
 public struct PolyVertex
 {
     public Vector4 Location;

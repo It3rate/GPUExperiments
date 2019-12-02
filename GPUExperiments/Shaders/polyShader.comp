@@ -84,7 +84,7 @@ struct Composite {
 	}
 	return result; 
  }
-
+ 
  void main() 
  {
 	uint index = uint(dot(gl_GlobalInvocationID, vec3(gl_WorkGroupSize.yz, 1)));
@@ -115,8 +115,8 @@ struct Composite {
 
 		float indexT = index / float(capacity);
 		float time = abs(mod(currentTicks, 100) / 50.0f - 1.0f);
-		vec4 col = getLerp4(0, indexT);
-		vec4 outColor = getLerp4(1, fract(indexT - currentTicks / 50.0));
+		vec4 col = getLerp4(2, indexT);
+		vec4 outColor = getLerp4(2, fract(indexT - currentTicks / 500.0f));
 		verts[idx + 0].color =  vec4(col.xyz, 1.0);
 		verts[idx + 1].color = outColor;
 		verts[idx + 2].color = outColor;
