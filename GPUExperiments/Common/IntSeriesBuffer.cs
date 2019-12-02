@@ -5,30 +5,25 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using OpenTK;
+using OpenTK.Graphics.OpenGL4;
 
 namespace GPUExperiments.Common
 {
-    public class IntSeriesBuffer
+    public class IntSeriesBuffer : SeriesBufferBase<int>
     {
-        public List<DataPointer> pointers;
-        public List<int[]> intSeriesValues;
-        private int itemIndex;
-
-        public IntSeriesBuffer()
+	    public IntSeriesBuffer()
         {
-            pointers = new List<DataPointer>();
-            intSeriesValues = new List<int[]>();
-            itemIndex = 0;
+            Pointers = new List<DataPointer>();
+            SeriesValues = new List<int[]>();
         }
 
-        public void AddSeries(int[] values, int vectorSize)
+        public override void AddSeries(int[] values, int vectorSize)
         {
             DataPointer p = new DataPointer(0, (uint)vectorSize, (uint)ValuesSize, (uint)values.Length);
-            pointers.Add(p);
-            intSeriesValues.Add(values);
-            itemIndex++;
+            Pointers.Add(p);
+            SeriesValues.Add(values);
         }
-        public void AddSeries(List<int[]> values, int vectorSize)
+        public override void AddSeries(List<int[]> values, int vectorSize)
         {
 	        foreach (var value in values)
 	        {
@@ -36,20 +31,20 @@ namespace GPUExperiments.Common
 		        AddSeries(ints, vectorSize);
 	        }
         }
-        public void AddSeries(List<Color> colors)
+        public override void AddSeries(List<Color> colors)
         {
 	        var ints = RGBAToInts(colors);
 	        AddSeries(ints, 4);
         }
 
-        public int[] FlattenedValues
+        public override int[] FlattenedValues
         {
             get
             {
                 int len = ValuesSize;
                 var result = new int[len];
                 int index = 0;
-                foreach (var intSeriesValue in intSeriesValues)
+                foreach (var intSeriesValue in SeriesValues)
                 {
                     foreach (var f in intSeriesValue)
                     {
@@ -60,21 +55,21 @@ namespace GPUExperiments.Common
             }
         }
 
-        public int ValuesSize
+        public override int ValuesSize
         {
             get
             {
                 int len = 0;
-                foreach (var intSeriesValue in intSeriesValues)
+                foreach (var intSeriesValue in SeriesValues)
                 {
                     len += intSeriesValue.Length;
                 }
                 return len;
             }
         }
-        public int ValuesByteSize => ValuesSize * sizeof(int);
-        public int PointersSize => pointers.Count;
-        public int PointersByteSize => DataPointer.ByteSize * PointersSize;
+        public override int ValuesByteSize => ValuesSize * sizeof(int);
+        public override int PointersSize => Pointers.Count;
+        public override int PointersByteSize => DataPointer.ByteSize * PointersSize;
 		
         public int[] RGBAToInts(List<Color> colors)
         {
@@ -88,6 +83,19 @@ namespace GPUExperiments.Common
                 result[index++] = color.A;
             }
             return result;
+        }
+
+        public override int BindSeriesBuffer(int bufferBindIndex,
+	        BufferTarget bufferTarget = BufferTarget.UniformBuffer,
+	        BufferRangeTarget bufferRangeTarget = BufferRangeTarget.ShaderStorageBuffer,
+	        BufferUsageHint bufferUsageHint = BufferUsageHint.DynamicRead)
+        {
+	        var result = GL.GenBuffer();
+	        GL.BindBuffer(bufferTarget, result);
+	        GL.BufferData(bufferTarget, ValuesByteSize, FlattenedValues, bufferUsageHint);
+	        GL.BindBuffer(bufferTarget, 0);
+	        GL.BindBufferBase(bufferRangeTarget, bufferBindIndex, result);
+	        return result;
         }
     }
 }

@@ -60,6 +60,7 @@
     <Compile Include="Common\ComputeShader.cs" />
     <Compile Include="Common\FloatSeriesBuffer.cs" />
     <Compile Include="Common\IntSeriesBuffer.cs" />
+    <Compile Include="Common\SeriesBufferBase.cs" />
     <Compile Include="Common\VertexFragmentShader.cs" />
     <Compile Include="Common\ShaderProgram.cs" />
     <Compile Include="Common\Texture.cs" />

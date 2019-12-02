@@ -104,15 +104,16 @@ namespace GPUExperiments
             seriesData.AddSeries(data2);
             seriesData.AddSeries(data3);
 
-            _floatSeries = GL.GenBuffer();
-            GL.BindBuffer(BufferTarget.UniformBuffer, _floatSeries);
-            GL.BufferData(BufferTarget.UniformBuffer, seriesData.ValuesByteSize, seriesData.FlattenedValues, BufferUsageHint.DynamicRead);
-            GL.BindBuffer(BufferTarget.UniformBuffer, 0);
-            GL.BindBufferBase(BufferRangeTarget.ShaderStorageBuffer, 3, _floatSeries); // Buffer Binding3
+            _floatSeries = seriesData.BindSeriesBuffer(3);
+	           // GL.GenBuffer();
+            //GL.BindBuffer(BufferTarget.UniformBuffer, _floatSeries);
+            //GL.BufferData(BufferTarget.UniformBuffer, seriesData.ValuesByteSize, seriesData.FlattenedValues, BufferUsageHint.DynamicRead);
+            //GL.BindBuffer(BufferTarget.UniformBuffer, 0);
+            //GL.BindBufferBase(BufferRangeTarget.ShaderStorageBuffer, 3, _floatSeries); // Buffer Binding3
 
             _pointers = GL.GenBuffer();
             GL.BindBuffer(BufferTarget.UniformBuffer, _pointers);
-            DataPointer[] pData = seriesData.pointers.ToArray();
+            DataPointer[] pData = seriesData.Pointers.ToArray();
             GL.BufferData(BufferTarget.UniformBuffer, seriesData.PointersByteSize, pData, BufferUsageHint.DynamicRead);
             GL.BindBuffer(BufferTarget.UniformBuffer, 0);
             GL.BindBufferBase(BufferRangeTarget.ShaderStorageBuffer, 4, _pointers); // Buffer Binding3
