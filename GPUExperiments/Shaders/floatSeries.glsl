@@ -1,18 +1,20 @@
 ﻿#version 430
 
-layout(std430, binding = 3) buffer FloatSeriesBuffer {
-	float floatSeriesValues[];
-};
-
 struct DataPointer {
 	uint type;
 	uint vecSize;
 	uint startAddress;
 	uint byteLength;
 };
-layout(std430, binding = 4) buffer SeriesPointers {
+
+layout(std430, binding = 3) buffer DataPointers {
 	DataPointer dataPointers[];
 };
+
+layout(std430, binding = 4) buffer FloatSeriesBuffer {
+	float floatSeriesValues[];
+};
+
 
 
 float getIndexRemainder(uint seriesIndex, uint vecSize, float t, out uint startIndex, out uint endIndex)

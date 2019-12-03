@@ -8,6 +8,7 @@ using OpenTK.Graphics.OpenGL4;
 
 namespace GPUExperiments.Common
 {
+
     public interface IPartialSeries
     {
         List<DataPointer> Pointers { get; }
@@ -16,6 +17,7 @@ namespace GPUExperiments.Common
 
     public abstract class SeriesBufferBase<T> : IPartialSeries where T : struct
     {
+		public abstract int BufferIndex { get; }
         public List<DataPointer> Pointers { get; protected set; }
 	    public List<T[]> SeriesValues { get; protected set; }
 
@@ -45,7 +47,7 @@ namespace GPUExperiments.Common
             }
         }
 
-        public int BindSeriesBuffer(int bufferBindIndex,
+        public int BindSeriesBuffer(
 		    BufferTarget bufferTarget = BufferTarget.UniformBuffer,
 		    BufferRangeTarget bufferRangeTarget = BufferRangeTarget.ShaderStorageBuffer,
 		    BufferUsageHint bufferUsageHint = BufferUsageHint.DynamicRead)
@@ -54,7 +56,7 @@ namespace GPUExperiments.Common
             GL.BindBuffer(bufferTarget, result);
             GL.BufferData(bufferTarget, ValuesByteSize, FlattenedValues, bufferUsageHint);
             GL.BindBuffer(bufferTarget, 0);
-            GL.BindBufferBase(bufferRangeTarget, bufferBindIndex, result);
+            GL.BindBufferBase(bufferRangeTarget, BufferIndex, result);
             return result;
         }
     }

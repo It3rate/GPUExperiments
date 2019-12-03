@@ -32,14 +32,14 @@ namespace GPUExperiments.Common
             return result.ToArray();
         }
 
-        public int BindSeriesBuffer(int bufferBindIndex, out uint[] startIndexes)
+        public int BindSeriesBuffer( out uint[] startIndexes)
         {
             var result = GL.GenBuffer();
             GL.BindBuffer(BufferTarget.UniformBuffer, result);
             var values = ConcatPointers(out startIndexes, SeriesBuffers.ToArray());
             GL.BufferData(BufferTarget.UniformBuffer, values.Length * DataPointer.ByteSize, values, BufferUsageHint.DynamicRead);
             GL.BindBuffer(BufferTarget.UniformBuffer, 0);
-            GL.BindBufferBase(BufferRangeTarget.ShaderStorageBuffer, bufferBindIndex, result);
+            GL.BindBufferBase(BufferRangeTarget.ShaderStorageBuffer, (int)BufferSlots.DataPointers, result);
             return result;
         }
     }

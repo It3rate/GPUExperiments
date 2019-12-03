@@ -11,6 +11,8 @@ namespace GPUExperiments.Common
 {
     public class IntSeriesBuffer : SeriesBufferBase<int>
     {
+	    public override int BufferIndex => (int)BufferSlots.IntSeries;
+
 	    public IntSeriesBuffer()
         {
             Pointers = new List<DataPointer>();

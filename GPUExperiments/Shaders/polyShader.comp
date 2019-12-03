@@ -67,7 +67,6 @@ struct Composite {
  }
  const float PI = 3.1415926535897932384626433832795;
  const float PIx2 = PI * 2.0f;    
- const float floatSeries[16] = float[] (0.3, 0.1, 0.0, 1.0,    0.0, 0.4, 1.0, 1.0,    1.0, 1.0, 0.0, 1.0,   1.0, 0.0, 0.1, 1.0);
 
  void main() 
  {
@@ -102,7 +101,7 @@ struct Composite {
 		vec4 col;
 		vec4 outColor;
 		getLerp(2, indexT, col);
-		 getLerp(2, fract(indexT - currentTicks / 500.0f), outColor);
+		getLerp(2, fract(indexT - currentTicks / 500.0f), outColor);
 		verts[idx + 0].color =  vec4(col.xyz, 1.0);
 		verts[idx + 1].color = outColor;
 		verts[idx + 2].color = outColor;

@@ -65,7 +65,7 @@ namespace GPUExperiments
             GL.BufferData(BufferTarget.ArrayBuffer, (int)vertexCount * PolyVertex.ByteSize, IntPtr.Zero,
                 BufferUsageHint.StaticDraw);
             GL.BindBuffer(BufferTarget.ArrayBuffer, 0);
-            GL.BindBufferBase(BufferRangeTarget.ShaderStorageBuffer, 1, _vbo);
+            GL.BindBufferBase(BufferRangeTarget.ShaderStorageBuffer, (int)BufferSlots.Vertexes, _vbo);
 
             _vba = GL.GenVertexArray();
             GL.BindBuffer(BufferTarget.ArrayBuffer, _vbo);
@@ -88,8 +88,21 @@ namespace GPUExperiments
             GL.BindBuffer(BufferTarget.UniformBuffer, _programState);
             GL.BufferData(BufferTarget.UniformBuffer, _state.ByteSize, ref _state, BufferUsageHint.DynamicRead);
             GL.BindBuffer(BufferTarget.UniformBuffer, 0);
-            GL.BindBufferBase(BufferRangeTarget.ShaderStorageBuffer, 2, _programState); // Buffer Binding 2
+            GL.BindBufferBase(BufferRangeTarget.ShaderStorageBuffer, (int)BufferSlots.ProgramState, _programState); // Buffer Binding 2
 
+            floatBuffer = new FloatSeriesBuffer();;
+			AddColors(floatBuffer);
+            _floatSeries = floatBuffer.BindSeriesBuffer();
+
+            DataPointerBuffer dpb = new DataPointerBuffer(floatBuffer);
+            _pointers = dpb.BindSeriesBuffer(out var startIndexes);
+
+            _loaded = true;
+            _gl.Invalidate();
+        }
+
+        private void AddColors(FloatSeriesBuffer seriesBuffer)
+        {
             var data1 = new List<Color>(){
                 Color.Red, Color.Orange, Color.Yellow, Color.GreenYellow, Color.Green, Color.Blue, Color.BlueViolet, Color.Violet};
             var data2 = new List<Color>(){
@@ -99,24 +112,9 @@ namespace GPUExperiments
 			{
 				data3.Add(Color.FromArgb(1, rnd.Next(128,255), rnd.Next(1, 255), (int)(i / 100f * 255)));
 			}
-            seriesData = new FloatSeriesBuffer();
-            seriesData.AddSeries(data1);
-            seriesData.AddSeries(data2);
-            seriesData.AddSeries(data3);
-
-            _floatSeries = seriesData.BindSeriesBuffer(3);
-
-            DataPointerBuffer dpb = new DataPointerBuffer(seriesData);
-            _pointers = dpb.BindSeriesBuffer(4, out var startIndexes);
-            //_pointers = GL.GenBuffer();
-            //GL.BindBuffer(BufferTarget.UniformBuffer, _pointers);
-            //DataPointer[] pData = seriesData.Pointers.ToArray();
-            //GL.BufferData(BufferTarget.UniformBuffer, seriesData.PointersByteSize, pData, BufferUsageHint.DynamicRead);
-            //GL.BindBuffer(BufferTarget.UniformBuffer, 0);
-            //GL.BindBufferBase(BufferRangeTarget.ShaderStorageBuffer, 4, _pointers); // Buffer Binding 4
-
-            _loaded = true;
-            _gl.Invalidate();
+			seriesBuffer.AddSeries(data1);
+			seriesBuffer.AddSeries(data2);
+			seriesBuffer.AddSeries(data3);
         }
 
         uint sideCount = 6;
@@ -127,7 +125,7 @@ namespace GPUExperiments
         private uint _counter = 0;
         private int _programState;
         private int _floatSeries;
-        private FloatSeriesBuffer seriesData;
+        private FloatSeriesBuffer floatBuffer;
         private int _pointers;
         private ProgramState _state = new ProgramState(0, 0, 1, 1, new uint[] { 0 });
 
@@ -140,7 +138,7 @@ namespace GPUExperiments
 
             _state.CurrentTicks = _counter++;
             _state.FloatSeriesStartIndex = 0;
-            _state.IntSeriesStartIndex = (uint)seriesData.PointersSize;
+            _state.IntSeriesStartIndex = (uint)floatBuffer.PointersSize;
             GL.BindBuffer(BufferTarget.UniformBuffer, _programState);
             GL.BufferData(BufferTarget.UniformBuffer, _state.ByteSize, ref _state, BufferUsageHint.DynamicRead);
             GL.DispatchCompute(_triangleCount, 1, 1);

@@ -11,7 +11,9 @@ namespace GPUExperiments.Common
 {
 	public class FloatSeriesBuffer : SeriesBufferBase<float>
     {
-		public FloatSeriesBuffer()
+	    public override int BufferIndex => (int)BufferSlots.FloatSeries;
+
+        public FloatSeriesBuffer()
 		{
 			Pointers = new List<DataPointer>();
 			SeriesValues = new List<float[]>();
