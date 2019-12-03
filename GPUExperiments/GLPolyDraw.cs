@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using System.Timers;
 using System.Windows.Forms;
 using GPUExperiments.Common;
+using GPUExperiments.Common.Buffers;
 using OpenTK;
 using OpenTK.Graphics.OpenGL4;
 using Timer = System.Windows.Forms.Timer;
@@ -16,13 +17,19 @@ namespace GPUExperiments
 {
     public class GLPolyDraw
     {
-        private int _textureId;
         private VertexFragmentShader _vfShader;
         private ComputeShader _computeShader;
         private GLControl _gl;
+
         private bool _loaded;
         private System.Timers.Timer _timer;
         private static readonly Random rnd = new Random();
+
+        private ProgramStateBuffer _program;
+        uint sideCount = 6;
+        private uint _triangleCount = 22 * 22;
+        private int _indirect;
+        private uint _counter;
 
         public GLPolyDraw(GLControl control)
         {
@@ -49,77 +56,26 @@ namespace GPUExperiments
 
         private void glControl1_Load(object sender, EventArgs e)
         {
-            int maxVertexUniformComponents = GL.GetInteger(GetPName.MaxVertexUniformComponents);
-            int maxTextureBufferSize = GL.GetInteger(GetPName.MaxTextureBufferSize);
+            uint vertexCount = _triangleCount * sideCount * 3;
 
             GL.ClearColor(0.2f, 0.0f, 0.0f, 1f);
             GL.Enable(EnableCap.DepthTest);
-
             _vfShader = new VertexFragmentShader("Shaders/polyShader.vert", "Shaders/polyShader.frag");
             _computeShader = new ComputeShader("Shaders/polyShader.comp");
 
-            uint vertexCount = _triangleCount * sideCount * 3;
+			_program = new ProgramStateBuffer();
+			AddColors(_program.FloatSeries);
+			_program.VertexBuffer.AdjustCapacity(vertexCount);
+			_program.BindAll();
 
-            _vbo = GL.GenBuffer();
-            GL.BindBuffer(BufferTarget.ArrayBuffer, _vbo);
-            GL.BufferData(BufferTarget.ArrayBuffer, (int)vertexCount * PolyVertex.ByteSize, IntPtr.Zero,
-                BufferUsageHint.StaticDraw);
-            GL.BindBuffer(BufferTarget.ArrayBuffer, 0);
-            GL.BindBufferBase(BufferRangeTarget.ShaderStorageBuffer, (int)BufferSlots.Vertexes, _vbo);
-
-            _vba = GL.GenVertexArray();
-            GL.BindBuffer(BufferTarget.ArrayBuffer, _vbo);
-            GL.BindVertexArray(_vba);
-            GL.VertexAttribPointer(0, 2, VertexAttribPointerType.Float, false, PolyVertex.ByteSize,
-                PolyVertex.LocationOffset);
-            GL.EnableVertexAttribArray(0);
-            GL.VertexAttribPointer(1, 4, VertexAttribPointerType.Float, false, PolyVertex.ByteSize,
-                PolyVertex.ColorOffset);
-            GL.EnableVertexAttribArray(1);
-            GL.BindVertexArray(0);
-
-            _indirect = GL.GenBuffer();
+			_indirect = GL.GenBuffer();
             GL.BindBuffer(BufferTarget.DrawIndirectBuffer, _indirect);
-            var pts = new DrawArraysIndirectCommand(vertexCount, 1); // vertCount, instCount 
-            GL.BufferData(BufferTarget.DrawIndirectBuffer, DrawArraysIndirectCommand.Stride, ref pts,
-                BufferUsageHint.DynamicDraw);
-
-			program = new ProgramStateBuffer();
-			AddColors(program.FloatSeries);
-			program.BindAll();
+            var pts = new DrawArraysIndirectCommand(vertexCount, 1);
+            GL.BufferData(BufferTarget.DrawIndirectBuffer, DrawArraysIndirectCommand.Stride, ref pts, BufferUsageHint.DynamicDraw);
 
             _loaded = true;
             _gl.Invalidate();
         }
-
-        private void AddColors(FloatSeriesBuffer seriesBuffer)
-        {
-            var data1 = new List<Color>(){
-                Color.Red, Color.Orange, Color.Yellow, Color.GreenYellow, Color.Green, Color.Blue, Color.BlueViolet, Color.Violet};
-            var data2 = new List<Color>(){
-                Color.DarkRed, Color.DarkOrange, Color.DarkGoldenrod, Color.DarkGreen, Color.DarkCyan, Color.DarkBlue, Color.DarkViolet, Color.DarkMagenta};
-			var data3 = new List<Color>();
-			for (int i = 0; i < 100; i++)
-			{
-				data3.Add(Color.FromArgb(1, rnd.Next(128,255), rnd.Next(1, 255), (int)(i / 100f * 255)));
-			}
-			seriesBuffer.AddSeries(data1);
-			seriesBuffer.AddSeries(data2);
-			seriesBuffer.AddSeries(data3);
-        }
-
-        private ProgramStateBuffer program;
-
-        uint sideCount = 6;
-        private uint _triangleCount = 22 * 22;
-        private int _indirect;
-        private int _vbo;
-        private int _vba;
-        private uint _counter = 0;
-
-        //private int _floatSeries;
-        //private FloatSeriesBuffer floatBuffer;
-        //private int _pointers;
 
         private void glControl1_Paint(object sender, PaintEventArgs e)
         {
@@ -127,46 +83,41 @@ namespace GPUExperiments
             GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
 
             _computeShader.Use();
-			program.BindUpdate(_counter++);
+			_program.BindUpdate(_counter++);
 			GL.DispatchCompute(_triangleCount, 1, 1);
 
             //GL.MemoryBarrier(MemoryBarrierFlags.AllBarrierBits);
 
             _vfShader.Use();
-            GL.BindVertexArray(_vba);
+            GL.BindVertexArray(_program.VertexBuffer.VbaId);
             GL.DrawArraysIndirect(PrimitiveType.Triangles, IntPtr.Zero);
 
             _gl.SwapBuffers();
         }
-
-
-
+		
         private void glControl1_Resize(object sender, EventArgs e)
         {
         }
+
+        private void AddColors(FloatSeriesBuffer seriesBuffer)
+        {
+	        var data1 = new List<Color>(){
+		        Color.Red, Color.Orange, Color.Yellow, Color.GreenYellow, Color.Green, Color.Blue, Color.BlueViolet, Color.Violet};
+	        var data2 = new List<Color>(){
+		        Color.DarkRed, Color.DarkOrange, Color.DarkGoldenrod, Color.DarkGreen, Color.DarkCyan, Color.DarkBlue, Color.DarkViolet, Color.DarkMagenta};
+	        var data3 = new List<Color>();
+	        for (int i = 0; i < 100; i++)
+	        {
+		        data3.Add(Color.FromArgb(1, rnd.Next(128, 255), rnd.Next(1, 255), (int)(i / 100f * 255)));
+	        }
+	        seriesBuffer.AddSeries(data1);
+	        seriesBuffer.AddSeries(data2);
+	        seriesBuffer.AddSeries(data3);
+        }
+
     }
 }
 
-
-public struct PolyVertex
-{
-    public Vector4 Location;
-    public Vector4 Color;
-    public PolyVertex(Vector4 location, Vector4 color)
-    {
-        Location = location;
-        Color = color;
-    }
-    public PolyVertex(float x, float y, Color color)
-    {
-        Location = new Vector4(x, y, 0, 1f);
-        Color = new Vector4(color.R / 255f, color.G / 255f, color.B / 255f, color.A / 255f);
-    }
-    public static int LocationOffset => 0;
-    public static int ColorOffset => (int)(sizeof(float) * 4);
-    public static int Size => 8;
-    public static int ByteSize => sizeof(float) * Size;
-}
 
 public struct DrawArraysIndirectCommand
 {

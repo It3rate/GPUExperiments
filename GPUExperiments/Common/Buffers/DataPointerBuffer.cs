@@ -1,16 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
+﻿using System.Collections.Generic;
 using System.Runtime.InteropServices;
-using System.Text;
-using System.Threading.Tasks;
 using OpenTK.Graphics.OpenGL4;
 
-namespace GPUExperiments.Common
+namespace GPUExperiments.Common.Buffers
 {
     public class DataPointerBuffer : BufferBase
     {
-	    public override int BufferIndex => (int)BufferSlots.DataPointers;
+	    public override BufferSlots BufferIndex => BufferSlots.DataPointers;
+	    public override BufferUsageHint BufferUsageHint { get; set; } = BufferUsageHint.DynamicRead;
 
         private List<IPartialSeries> SeriesBuffers { get; } = new List<IPartialSeries>();
 
@@ -36,10 +33,12 @@ namespace GPUExperiments.Common
 
         public override void BindData()
         {
-            GL.BindBuffer(BufferTarget.UniformBuffer, Id);
+            GL.BindBuffer(BufferTarget, Id);
             var values = ConcatPointers(SeriesBuffers.ToArray());
-            GL.BufferData(BufferTarget.UniformBuffer, values.Length * DataPointer.ByteSize, values, BufferUsageHint.DynamicRead);
+            GL.BufferData(BufferTarget, values.Length * DataPointer.ByteSize, values, BufferUsageHint);
+            GL.BindBuffer(BufferTarget, 0);
         }
+
         public override int Size => ConcatPointers(SeriesBuffers.ToArray()).Length;
         public override int ByteSize => Size * DataPointer.ByteSize;
     }

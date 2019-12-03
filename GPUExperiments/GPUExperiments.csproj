@@ -55,15 +55,16 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Common\BufferBase.cs" />
+    <Compile Include="Common\Buffers\BufferBase.cs" />
+    <Compile Include="Common\Buffers\VertexBuffer.cs" />
     <Compile Include="Common\Camera.cs" />
     <Compile Include="Common\ComputeDraw.cs" />
     <Compile Include="Common\ComputeShader.cs" />
-    <Compile Include="Common\DataPointerBuffer.cs" />
-    <Compile Include="Common\FloatSeriesBuffer.cs" />
-    <Compile Include="Common\IntSeriesBuffer.cs" />
-    <Compile Include="Common\ProgramStateBuffer.cs" />
-    <Compile Include="Common\SeriesBufferBase.cs" />
+    <Compile Include="Common\Buffers\DataPointerBuffer.cs" />
+    <Compile Include="Common\Buffers\FloatSeriesBuffer.cs" />
+    <Compile Include="Common\Buffers\IntSeriesBuffer.cs" />
+    <Compile Include="Common\Buffers\ProgramStateBuffer.cs" />
+    <Compile Include="Common\Buffers\SeriesBufferBase.cs" />
     <Compile Include="Common\VertexFragmentShader.cs" />
     <Compile Include="Common\ShaderProgram.cs" />
     <Compile Include="Common\Texture.cs" />

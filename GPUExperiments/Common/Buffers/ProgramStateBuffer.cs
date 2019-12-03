@@ -1,23 +1,18 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Runtime.InteropServices;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Runtime.InteropServices;
 using OpenTK.Graphics.OpenGL4;
 
-namespace GPUExperiments.Common
+namespace GPUExperiments.Common.Buffers
 {
     public class ProgramStateBuffer : BufferBase
     {
-        public override int BufferIndex => (int)BufferSlots.ProgramState;
+        public override BufferSlots BufferIndex => BufferSlots.ProgramState;
 
         private uint[] _startIndexes;
         private ProgramState _state = new ProgramState();
 	    public ProgramState State{get => _state;}
 
-	    //public VertexDataBuffer VertexBuffer { get; }
-	    public DataPointerBuffer DataPointers { get; } = new DataPointerBuffer();
+	    public VertexBuffer VertexBuffer { get; } = new VertexBuffer();
+        public DataPointerBuffer DataPointers { get; } = new DataPointerBuffer();
         public FloatSeriesBuffer FloatSeries { get; } = new FloatSeriesBuffer();
 	    public IntSeriesBuffer IntSeries { get; } = new IntSeriesBuffer();
 
@@ -37,8 +32,9 @@ namespace GPUExperiments.Common
 
         public void BindAll()
         {
+	        VertexBuffer.BindBuffer();
 	        FloatSeries.BindBuffer();
-	        IntSeries.BindBuffer();
+            IntSeries.BindBuffer();
 	        DataPointers.BindBuffer();
             BindBuffer();
         }
@@ -47,6 +43,7 @@ namespace GPUExperiments.Common
         {
 		    GL.BindBuffer(BufferTarget.UniformBuffer, Id);
 	        GL.BufferData(BufferTarget.UniformBuffer, ByteSize, ref _state, BufferUsageHint.DynamicRead);
+	        GL.BindBuffer(BufferTarget, 0);
         }
 
         public override int Size => _state.Size;
