@@ -84,18 +84,9 @@ namespace GPUExperiments
             GL.BufferData(BufferTarget.DrawIndirectBuffer, DrawArraysIndirectCommand.Stride, ref pts,
                 BufferUsageHint.DynamicDraw);
 
-            _programState = GL.GenBuffer();
-            GL.BindBuffer(BufferTarget.UniformBuffer, _programState);
-            GL.BufferData(BufferTarget.UniformBuffer, _state.ByteSize, ref _state, BufferUsageHint.DynamicRead);
-            GL.BindBuffer(BufferTarget.UniformBuffer, 0);
-            GL.BindBufferBase(BufferRangeTarget.ShaderStorageBuffer, (int)BufferSlots.ProgramState, _programState); // Buffer Binding 2
-
-            floatBuffer = new FloatSeriesBuffer();;
-			AddColors(floatBuffer);
-            _floatSeries = floatBuffer.BindSeriesBuffer();
-
-            DataPointerBuffer dpb = new DataPointerBuffer(floatBuffer);
-            _pointers = dpb.BindSeriesBuffer(out var startIndexes);
+			program = new ProgramStateBuffer();
+			AddColors(program.FloatSeries);
+			program.BindAll();
 
             _loaded = true;
             _gl.Invalidate();
@@ -117,17 +108,18 @@ namespace GPUExperiments
 			seriesBuffer.AddSeries(data3);
         }
 
+        private ProgramStateBuffer program;
+
         uint sideCount = 6;
         private uint _triangleCount = 22 * 22;
         private int _indirect;
         private int _vbo;
         private int _vba;
         private uint _counter = 0;
-        private int _programState;
-        private int _floatSeries;
-        private FloatSeriesBuffer floatBuffer;
-        private int _pointers;
-        private ProgramState _state = new ProgramState(0, 0, 1, 1, new uint[] { 0 });
+
+        //private int _floatSeries;
+        //private FloatSeriesBuffer floatBuffer;
+        //private int _pointers;
 
         private void glControl1_Paint(object sender, PaintEventArgs e)
         {
@@ -135,13 +127,8 @@ namespace GPUExperiments
             GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
 
             _computeShader.Use();
-
-            _state.CurrentTicks = _counter++;
-            _state.FloatSeriesStartIndex = 0;
-            _state.IntSeriesStartIndex = (uint)floatBuffer.PointersSize;
-            GL.BindBuffer(BufferTarget.UniformBuffer, _programState);
-            GL.BufferData(BufferTarget.UniformBuffer, _state.ByteSize, ref _state, BufferUsageHint.DynamicRead);
-            GL.DispatchCompute(_triangleCount, 1, 1);
+			program.BindUpdate(_counter++);
+			GL.DispatchCompute(_triangleCount, 1, 1);
 
             //GL.MemoryBarrier(MemoryBarrierFlags.AllBarrierBits);
 
@@ -158,36 +145,6 @@ namespace GPUExperiments
         {
         }
     }
-}
-
-[StructLayout(LayoutKind.Explicit)]
-public struct ProgramState
-{
-    [FieldOffset(0)] public uint CurrentTicks;
-    [FieldOffset(4)] public uint PreviousTicks;
-    [FieldOffset(8)] public uint TotalElementCount;
-    [FieldOffset(12)] public uint DirtyElementCount;
-    [FieldOffset(16)] public uint FloatSeriesStartIndex;
-    [FieldOffset(20)] public uint IntSeriesStartIndex;
-    [FieldOffset(24)] public uint[] ActiveElementIds;
-
-    public ProgramState(uint currentTicks, 
-        uint previousTicks, 
-        uint totalElementCount, 
-        uint dirtyElementCount, 
-        uint[] activeElementIds = null)
-    {
-        CurrentTicks = currentTicks;
-        PreviousTicks = previousTicks;
-        TotalElementCount = totalElementCount;
-        DirtyElementCount = dirtyElementCount;
-        FloatSeriesStartIndex = 0;
-        IntSeriesStartIndex = 0;
-        ActiveElementIds = activeElementIds ?? new uint[] { };
-    }
-
-    public int Size => 6 + ActiveElementIds.Length;
-    public int ByteSize => sizeof(uint) * Size;
 }
 
 

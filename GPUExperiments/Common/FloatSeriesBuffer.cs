@@ -21,7 +21,7 @@ namespace GPUExperiments.Common
 
         public override void AddSeries(float[] values, int vectorSize)
 		{
-			DataPointer p = new DataPointer(0, (uint) vectorSize, (uint) ValuesSize, (uint) values.Length);
+			DataPointer p = new DataPointer(0, (uint) vectorSize, (uint) Size, (uint) values.Length);
 			Pointers.Add(p);
 			SeriesValues.Add(values);
 		}
@@ -58,7 +58,7 @@ namespace GPUExperiments.Common
 		{
 			get
 			{
-				int len = ValuesSize;
+				int len = Size;
 				var result = new float[len];
 				int index = 0;
 				foreach (var floatSeriesValue in SeriesValues)
@@ -73,7 +73,7 @@ namespace GPUExperiments.Common
 			}
 		}
 
-        public override int ValuesSize
+        public override int Size
 		{
 			get
 			{
@@ -86,9 +86,7 @@ namespace GPUExperiments.Common
 				return len;
 			}
 		}
-        public override int ValuesByteSize => ValuesSize * sizeof(float);
-        public override int PointersSize => Pointers.Count;
-        public override int PointersByteSize => DataPointer.ByteSize * PointersSize;
+        public override int ByteSize => Size * sizeof(float);
 
 		public float[] VectorToFloats(List<Vector2> values)
 		{

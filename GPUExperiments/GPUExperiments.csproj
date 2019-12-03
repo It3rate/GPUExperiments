@@ -55,6 +55,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Common\BufferBase.cs" />
     <Compile Include="Common\Camera.cs" />
     <Compile Include="Common\ComputeDraw.cs" />
     <Compile Include="Common\ComputeShader.cs" />

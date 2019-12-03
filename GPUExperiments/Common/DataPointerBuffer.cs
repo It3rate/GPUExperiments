@@ -8,8 +8,10 @@ using OpenTK.Graphics.OpenGL4;
 
 namespace GPUExperiments.Common
 {
-    public class DataPointerBuffer
+    public class DataPointerBuffer : BufferBase
     {
+	    public override int BufferIndex => (int)BufferSlots.DataPointers;
+
         private List<IPartialSeries> SeriesBuffers { get; } = new List<IPartialSeries>();
 
         public DataPointerBuffer(params IPartialSeries[] seriesBuffers)
@@ -17,31 +19,29 @@ namespace GPUExperiments.Common
             SeriesBuffers.AddRange(seriesBuffers);
         }
 
-        public static DataPointer[] ConcatPointers(out uint[] startIndexes, params IPartialSeries[] seriesBuffers)
+        public void AddSeries(IPartialSeries seriesBuffer)
+        {
+			SeriesBuffers.Add(seriesBuffer);
+        }
+
+        public static DataPointer[] ConcatPointers(params IPartialSeries[] seriesBuffers)
         {
             List<DataPointer> result = new List<DataPointer>();
-            startIndexes = new uint[seriesBuffers.Length];
-            uint index = 0;
-            for (int i = 0; i < seriesBuffers.Length; i++)
+            foreach (var seriesBuffer in seriesBuffers)
             {
-                var sb = seriesBuffers[i];
-                result.AddRange(sb.Pointers);
-                startIndexes[i] = index;
-                index += (uint)(sb.Pointers.Count * DataPointer.Size);
+	            result.AddRange(seriesBuffer.Pointers);
             }
             return result.ToArray();
         }
 
-        public int BindSeriesBuffer( out uint[] startIndexes)
+        public override void BindData()
         {
-            var result = GL.GenBuffer();
-            GL.BindBuffer(BufferTarget.UniformBuffer, result);
-            var values = ConcatPointers(out startIndexes, SeriesBuffers.ToArray());
+            GL.BindBuffer(BufferTarget.UniformBuffer, Id);
+            var values = ConcatPointers(SeriesBuffers.ToArray());
             GL.BufferData(BufferTarget.UniformBuffer, values.Length * DataPointer.ByteSize, values, BufferUsageHint.DynamicRead);
-            GL.BindBuffer(BufferTarget.UniformBuffer, 0);
-            GL.BindBufferBase(BufferRangeTarget.ShaderStorageBuffer, (int)BufferSlots.DataPointers, result);
-            return result;
         }
+        public override int Size => ConcatPointers(SeriesBuffers.ToArray()).Length;
+        public override int ByteSize => Size * DataPointer.ByteSize;
     }
 
     [StructLayout(LayoutKind.Explicit)]
