@@ -58,6 +58,7 @@
     <Compile Include="Common\Camera.cs" />
     <Compile Include="Common\ComputeDraw.cs" />
     <Compile Include="Common\ComputeShader.cs" />
+    <Compile Include="Common\DataPointerBuffer.cs" />
     <Compile Include="Common\FloatSeriesBuffer.cs" />
     <Compile Include="Common\IntSeriesBuffer.cs" />
     <Compile Include="Common\SeriesBufferBase.cs" />

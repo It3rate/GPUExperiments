@@ -105,18 +105,15 @@ namespace GPUExperiments
             seriesData.AddSeries(data3);
 
             _floatSeries = seriesData.BindSeriesBuffer(3);
-	           // GL.GenBuffer();
-            //GL.BindBuffer(BufferTarget.UniformBuffer, _floatSeries);
-            //GL.BufferData(BufferTarget.UniformBuffer, seriesData.ValuesByteSize, seriesData.FlattenedValues, BufferUsageHint.DynamicRead);
-            //GL.BindBuffer(BufferTarget.UniformBuffer, 0);
-            //GL.BindBufferBase(BufferRangeTarget.ShaderStorageBuffer, 3, _floatSeries); // Buffer Binding3
 
-            _pointers = GL.GenBuffer();
-            GL.BindBuffer(BufferTarget.UniformBuffer, _pointers);
-            DataPointer[] pData = seriesData.Pointers.ToArray();
-            GL.BufferData(BufferTarget.UniformBuffer, seriesData.PointersByteSize, pData, BufferUsageHint.DynamicRead);
-            GL.BindBuffer(BufferTarget.UniformBuffer, 0);
-            GL.BindBufferBase(BufferRangeTarget.ShaderStorageBuffer, 4, _pointers); // Buffer Binding3
+            DataPointerBuffer dpb = new DataPointerBuffer(seriesData);
+            _pointers = dpb.BindSeriesBuffer(4, out var startIndexes);
+            //_pointers = GL.GenBuffer();
+            //GL.BindBuffer(BufferTarget.UniformBuffer, _pointers);
+            //DataPointer[] pData = seriesData.Pointers.ToArray();
+            //GL.BufferData(BufferTarget.UniformBuffer, seriesData.PointersByteSize, pData, BufferUsageHint.DynamicRead);
+            //GL.BindBuffer(BufferTarget.UniformBuffer, 0);
+            //GL.BindBufferBase(BufferRangeTarget.ShaderStorageBuffer, 4, _pointers); // Buffer Binding 4
 
             _loaded = true;
             _gl.Invalidate();
@@ -132,7 +129,7 @@ namespace GPUExperiments
         private int _floatSeries;
         private FloatSeriesBuffer seriesData;
         private int _pointers;
-        private ProgramState _state = new ProgramState(0, 0, 1, new uint[] { 0 });
+        private ProgramState _state = new ProgramState(0, 0, 1, 1, new uint[] { 0 });
 
         private void glControl1_Paint(object sender, PaintEventArgs e)
         {
@@ -166,26 +163,33 @@ namespace GPUExperiments
 }
 
 [StructLayout(LayoutKind.Explicit)]
-public struct DataPointer
+public struct ProgramState
 {
-	[FieldOffset(0)]
-    public uint Type;
-    [FieldOffset(4)]
-    public uint VecSize;
-    [FieldOffset(8)]
-    public uint StartAddress;
-    [FieldOffset(12)]
-    public uint ByteLength;
+    [FieldOffset(0)] public uint CurrentTicks;
+    [FieldOffset(4)] public uint PreviousTicks;
+    [FieldOffset(8)] public uint TotalElementCount;
+    [FieldOffset(12)] public uint DirtyElementCount;
+    [FieldOffset(16)] public uint FloatSeriesStartIndex;
+    [FieldOffset(20)] public uint IntSeriesStartIndex;
+    [FieldOffset(24)] public uint[] ActiveElementIds;
 
-    public DataPointer(uint type, uint vecSize, uint startAddress, uint byteLength)
+    public ProgramState(uint currentTicks, 
+        uint previousTicks, 
+        uint totalElementCount, 
+        uint dirtyElementCount, 
+        uint[] activeElementIds = null)
     {
-        Type = type;
-        VecSize = vecSize;
-        StartAddress = startAddress;
-        ByteLength = byteLength;
+        CurrentTicks = currentTicks;
+        PreviousTicks = previousTicks;
+        TotalElementCount = totalElementCount;
+        DirtyElementCount = dirtyElementCount;
+        FloatSeriesStartIndex = 0;
+        IntSeriesStartIndex = 0;
+        ActiveElementIds = activeElementIds ?? new uint[] { };
     }
-    public static int Size => 4;
-    public static int ByteSize => sizeof(float) * Size;
+
+    public int Size => 6 + ActiveElementIds.Length;
+    public int ByteSize => sizeof(uint) * Size;
 }
 
 
@@ -208,31 +212,6 @@ public struct PolyVertex
     public static int Size => 8;
     public static int ByteSize => sizeof(float) * Size;
 }
-
-[StructLayout(LayoutKind.Explicit)]
-public struct ProgramState
-{
-    [FieldOffset(0)] public uint CurrentTicks;
-    [FieldOffset(4)] public uint PreviousTicks;
-    [FieldOffset(8)] public uint TotalElementCount;
-    [FieldOffset(12)] public uint FloatSeriesStartIndex;
-    [FieldOffset(16)] public uint IntSeriesStartIndex;
-    [FieldOffset(24)] public uint[] ActiveElementIds;
-
-    public ProgramState(uint currentTicks, uint previousTicks, uint totalElementCount, uint[] activeElementIds)
-    {
-        CurrentTicks = currentTicks;
-        PreviousTicks = previousTicks;
-        TotalElementCount = totalElementCount;
-        FloatSeriesStartIndex = 0;
-        IntSeriesStartIndex = 0;
-        ActiveElementIds = new uint[] { 0 };
-    }
-
-    public int Size => 6 + ActiveElementIds.Length;
-    public int ByteSize => sizeof(uint) * Size;
-}
-
 
 public struct DrawArraysIndirectCommand
 {

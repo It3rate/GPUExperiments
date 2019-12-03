@@ -84,18 +84,6 @@ namespace GPUExperiments.Common
             }
             return result;
         }
-
-        public override int BindSeriesBuffer(int bufferBindIndex,
-	        BufferTarget bufferTarget = BufferTarget.UniformBuffer,
-	        BufferRangeTarget bufferRangeTarget = BufferRangeTarget.ShaderStorageBuffer,
-	        BufferUsageHint bufferUsageHint = BufferUsageHint.DynamicRead)
-        {
-	        var result = GL.GenBuffer();
-	        GL.BindBuffer(bufferTarget, result);
-	        GL.BufferData(bufferTarget, ValuesByteSize, FlattenedValues, bufferUsageHint);
-	        GL.BindBuffer(bufferTarget, 0);
-	        GL.BindBufferBase(bufferRangeTarget, bufferBindIndex, result);
-	        return result;
-        }
+        
     }
 }

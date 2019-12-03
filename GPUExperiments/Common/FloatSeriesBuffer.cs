@@ -23,7 +23,6 @@ namespace GPUExperiments.Common
 			Pointers.Add(p);
 			SeriesValues.Add(values);
 		}
-
         public override void AddSeries(List<float[]> values, int vectorSize)
 		{
 			foreach (var value in values)
@@ -32,26 +31,22 @@ namespace GPUExperiments.Common
 				AddSeries(floats, vectorSize);
 			}
 		}
-
         public override void AddSeries(List<Color> colors)
 		{
 			var floats = RGBAToFloats(colors);
 			AddSeries(floats, 4);
 		}
-
-		public void AddSeries(List<Vector2> values)
+        public void AddSeries(List<Vector2> values)
 		{
 			var floats = VectorToFloats(values);
 			AddSeries(floats, 2);
 		}
-
-		public void AddSeries(List<Vector3> values)
+        public void AddSeries(List<Vector3> values)
 		{
 			var floats = VectorToFloats(values);
 			AddSeries(floats, 3);
 		}
-
-		public void AddSeries(List<Vector4> values)
+        public void AddSeries(List<Vector4> values)
 		{
 			var floats = VectorToFloats(values);
 			AddSeries(floats, 4);
@@ -105,8 +100,7 @@ namespace GPUExperiments.Common
 
 			return result;
 		}
-
-		public float[] VectorToFloats(List<Vector3> values)
+        public float[] VectorToFloats(List<Vector3> values)
 		{
 			var result = new float[values.Count * 3];
 			int index = 0;
@@ -119,8 +113,7 @@ namespace GPUExperiments.Common
 
 			return result;
 		}
-
-		public float[] VectorToFloats(List<Vector4> values)
+        public float[] VectorToFloats(List<Vector4> values)
 		{
 			var result = new float[values.Count * 4];
 			int index = 0;
@@ -134,8 +127,7 @@ namespace GPUExperiments.Common
 
 			return result;
 		}
-
-		public float[] RGBAToFloats(List<Color> colors)
+        public float[] RGBAToFloats(List<Color> colors)
 		{
 			var result = new float[colors.Count * 4];
 			int index = 0;
@@ -149,18 +141,6 @@ namespace GPUExperiments.Common
 
 			return result;
 		}
-
-		public override int BindSeriesBuffer(int bufferBindIndex,
-			BufferTarget bufferTarget = BufferTarget.UniformBuffer,
-			BufferRangeTarget bufferRangeTarget = BufferRangeTarget.ShaderStorageBuffer,
-			BufferUsageHint bufferUsageHint = BufferUsageHint.DynamicRead)
-		{
-			var result = GL.GenBuffer();
-			GL.BindBuffer(bufferTarget, result);
-			GL.BufferData(bufferTarget, ValuesByteSize, FlattenedValues, bufferUsageHint);
-			GL.BindBuffer(bufferTarget, 0);
-			GL.BindBufferBase(bufferRangeTarget, bufferBindIndex, result);
-			return result;
-		}
+        
 	}
 }
