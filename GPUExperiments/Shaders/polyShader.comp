@@ -3,16 +3,15 @@
 //layout (local_size_x = 9, local_size_y = 4) in; 
 layout (local_size_x = 1, local_size_y = 1) in; 
 
+#ifndef BINDINGS
 struct PolyVertex {
    vec4  location; 
    vec4  color; 
 };
-
-layout (std430, binding = 1) buffer VertexBuffer {
+buffer VertexBuffer {
    PolyVertex verts [];
 };
-
-layout(std430, binding = 2) buffer ProgramState {
+buffer ProgramState {
    uint currentTicks;
    uint previousTicks;
    uint totalElementCount;
@@ -21,6 +20,10 @@ layout(std430, binding = 2) buffer ProgramState {
    uint intSeriesStartIndex;
    uint activeElementIds[];
 };
+void getInterpolation(uint seriesIndex, float t, inout vec2 result);
+void getInterpolation(uint seriesIndex, float t, inout vec3 result);
+void getInterpolation(uint seriesIndex, float t, inout vec4 result);
+#endif
 
 struct Store {
    uint storeId;
@@ -100,8 +103,8 @@ struct Composite {
 		float time = abs(mod(currentTicks, 97) / 48.5f - 1.0f);
 		vec4 col;
 		vec4 outColor;
-		getLerp(2, indexT, col);
-		getLerp(2, fract(indexT - currentTicks / 500.0f), outColor);
+		getInterpolation(2, indexT, col);
+		getInterpolation(2, fract(indexT - currentTicks / 500.0f), outColor);
 		verts[idx + 0].color =  vec4(col.xyz, 1.0);
 		verts[idx + 1].color = outColor;
 		verts[idx + 2].color = outColor;

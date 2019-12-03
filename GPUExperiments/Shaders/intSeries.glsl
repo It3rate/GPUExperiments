@@ -1,12 +1,5 @@
 ﻿#version 430
 
-layout(std430, binding = 5) buffer intSeriesBuffer {
-	uint[256] intSeriesOffsets;
-	uint[256] intSeriesLengths;
-	int intSeriesValues[];
-};
-
-
 int intAt(uint seriesIndex, uint index)
 {
 	uint seriesAddress = intSeriesOffsets[seriesIndex];

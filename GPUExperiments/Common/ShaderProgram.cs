@@ -30,6 +30,7 @@ namespace GPUExperiments.Common
         protected int CreateShaderFromPath(string path, ShaderType shaderType)
         {
             string src = "";
+            src = AppendSource("Shaders/bufferBindings.glsl", src) + "\r\n";
             src = AppendSource("Shaders/floatSeries.glsl", src) + "\r\n";
             src = AppendSource("Shaders/intSeries.glsl", src) + "\r\n";
             src = AppendSource(path, src);

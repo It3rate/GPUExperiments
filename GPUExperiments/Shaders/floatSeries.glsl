@@ -1,22 +1,5 @@
 ﻿#version 430
 
-struct DataPointer {
-	uint type;
-	uint vecSize;
-	uint startAddress;
-	uint byteLength;
-};
-
-layout(std430, binding = 3) buffer DataPointers {
-	DataPointer dataPointers[];
-};
-
-layout(std430, binding = 4) buffer FloatSeriesBuffer {
-	float floatSeriesValues[];
-};
-
-
-
 float getIndexRemainder(uint seriesIndex, uint vecSize, float t, out uint startIndex, out uint endIndex)
 {
 	DataPointer dp = dataPointers[seriesIndex];
@@ -38,7 +21,7 @@ float getIndexRemainder(uint seriesIndex, uint vecSize, float t, out uint startI
 	return result;
 }
 
-void getLerp(uint seriesIndex, float t, inout vec2 result)
+void getInterpolation(uint seriesIndex, float t, inout vec2 result)
 {
 	uint startIndex, endIndex;
 	float rem = getIndexRemainder(seriesIndex, 2, t, startIndex, endIndex);
@@ -52,7 +35,7 @@ void getLerp(uint seriesIndex, float t, inout vec2 result)
 		result[i] = mix(floatSeriesValues[startByte + i], floatSeriesValues[endByte + i], rem);
 	}
 }
-void getLerp(uint seriesIndex, float t, inout vec3 result)
+void getInterpolation(uint seriesIndex, float t, inout vec3 result)
 {
 	uint startIndex, endIndex;
 	float rem = getIndexRemainder(seriesIndex, 3, t, startIndex, endIndex);
@@ -66,7 +49,7 @@ void getLerp(uint seriesIndex, float t, inout vec3 result)
 		result[i] = mix(floatSeriesValues[startByte + i], floatSeriesValues[endByte + i], rem);
 	}
 }
-void getLerp(uint seriesIndex, float t, inout vec4 result)
+void getInterpolation(uint seriesIndex, float t, inout vec4 result)
 {
 	uint startIndex, endIndex;
 	float rem = getIndexRemainder(seriesIndex, 4, t, startIndex, endIndex);
