@@ -65,6 +65,9 @@
     <Compile Include="Common\Buffers\IntSeriesBuffer.cs" />
     <Compile Include="Common\Buffers\ProgramStateBuffer.cs" />
     <Compile Include="Common\Buffers\SeriesBufferBase.cs" />
+    <Compile Include="Common\Series\DataStore.cs" />
+    <Compile Include="Common\Series\Document.cs" />
+    <Compile Include="Common\Series\Series.cs" />
     <Compile Include="Common\VertexFragmentShader.cs" />
     <Compile Include="Common\ShaderProgram.cs" />
     <Compile Include="Common\Texture.cs" />
