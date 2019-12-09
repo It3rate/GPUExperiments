@@ -6,16 +6,11 @@ using System.Threading.Tasks;
 
 namespace GPUExperiments.Common.Series
 {
-
-	public class DataStore<T>
+    public class DataStore<T>
 	{
-		public List<T[]> Data { get; } = new List<T[]>(0xFFF);
-		
-		public  T[] this[int index]
-		{
-			get { return Data[index]; }
-		}
-	}
+		public Dictionary<uint, T[]> Data { get; } = new Dictionary<uint, T[]>(0xFFF);
+        public T[] this[uint index] => Data[index];
+    }
 	public class FloatDataStore : DataStore<float>
 	{
 	}

@@ -8,7 +8,10 @@ namespace GPUExperiments.Common.Series
 {
     public class Document
     {
-	    public FloatDataStore FloatDataStore { get; }
-	    public IntDataStore IntDataStore { get; }
+        private static Document _activeInstance;
+        public static Document ActiveInstance => _activeInstance;
+
+	    public FloatDataStore FloatDataStore { get; } = new FloatDataStore();
+	    public IntDataStore IntDataStore { get; } = new IntDataStore();
     }
 }

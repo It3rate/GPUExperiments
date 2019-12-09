@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -21,6 +22,8 @@ namespace GPUExperiments.Common.Series
 
     public struct Series
     {
+        public static uint SeriesIdCounter = 1;
+
         public ushort Id;
 	    public SeriesType Type;
 	    public SampleStyle SampleStyle;
@@ -30,25 +33,48 @@ namespace GPUExperiments.Common.Series
 
     public abstract class SeriesData<T> where T : struct
     {
-	    public ushort Id { get; } = 0;
-	    public uint Capacity { get; protected set; } = 1;
-	    public int Length => _data.Length;
-	    public virtual T[] Data { get; }
+        protected static uint NextSeriesId => Series.SeriesIdCounter++;
 
-	    protected Document _document { get; }
-	    protected T[] _data;
+        public uint Id { get; private set; }
+	    public uint Capacity { get; protected set; } = 0;
+	    public int Length => LocalData.Length;
+	    public abstract T[] Data { get; }
+
+	    protected Document Document { get; }
+	    protected T[] LocalData;
 
         //private List<ushort> _refs { get; } = new List<ushort>();
         //private bool _dataChanged;
         //private bool _dataLengthChanged;
+
+        protected SeriesData(T[] localData)
+        {
+            Document = Document.ActiveInstance;
+            Id = 0;
+            LocalData = localData;
+            Debug.Assert(localData != null);
+        }
+
+        protected SeriesData(uint id)
+        {
+            Document = Document.ActiveInstance;
+            Id = id;
+            Debug.Assert(id != 0);
+        }
     }
 
     public class FloatSeriesData : SeriesData<float>
     {
-	    public override float[] Data => (Id == 0) ? _data : _document.FloatDataStore[Id];
+	    public override float[] Data => (Id == 0) ? LocalData : Document.FloatDataStore[Id];
+
+        public FloatSeriesData(float[] localData) : base(localData) { }
+        public FloatSeriesData(uint id) : base(id) { }
     }
     public class IntSeriesData : SeriesData<int>
     {
-	    public override int[] Data => (Id == 0) ? _data : _document.IntDataStore[Id];
+	    public override int[] Data => (Id == 0) ? LocalData : Document.IntDataStore[Id];
+
+        public IntSeriesData(int[] localData) : base(localData) { }
+        public IntSeriesData(uint id) : base(id) { }
     }
 }
