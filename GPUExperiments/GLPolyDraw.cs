@@ -65,7 +65,8 @@ namespace GPUExperiments
 
 			_program = new ProgramStateBuffer();
 			AddColors(_program.FloatSeries);
-			_program.VertexBuffer.AdjustCapacity(vertexCount);
+            uint capacity = (uint)Math.Pow(2, (int)Math.Log(vertexCount, 2) + 1);
+			_program.VertexBuffer.AdjustCapacity(capacity);
 			_program.BindAll();
 
 			_indirect = GL.GenBuffer();

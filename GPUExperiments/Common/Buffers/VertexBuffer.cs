@@ -11,7 +11,9 @@ namespace GPUExperiments.Common.Buffers
 {
     public class VertexBuffer : BufferBase
     {
-	    public int VbaId { get; private set; } 
+        public int LocationSlot = 0;
+        public int ColorSlot = 1;
+        public int VbaId { get; private set; } 
 
         public override BufferSlots BufferIndex => BufferSlots.Vertexes;
         public uint Capacity => Math.Max(_setCapacity, (uint)Vertexes.Count);
@@ -23,7 +25,7 @@ namespace GPUExperiments.Common.Buffers
 
 	    public List<BasicVertex> Vertexes { get; } = new List<BasicVertex>();
 
-	    public VertexBuffer(uint capacity = 0)
+	    public VertexBuffer(uint capacity = 0, ShaderProgram program = null)
 	    {
 		    _setCapacity = capacity;
 		    VbaId = GL.GenVertexArray();
@@ -60,10 +62,10 @@ namespace GPUExperiments.Common.Buffers
 	        GL.BindBuffer(BufferTarget.ArrayBuffer, Id);
 	        GL.BindVertexArray(VbaId);
 
-	        GL.VertexAttribPointer(0, 2, VertexAttribPointerType.Float, false, BasicVertex.ByteSize, BasicVertex.LocationOffset);
-	        GL.EnableVertexAttribArray(0);
-	        GL.VertexAttribPointer(1, 4, VertexAttribPointerType.Float, false, BasicVertex.ByteSize, BasicVertex.ColorOffset);
-	        GL.EnableVertexAttribArray(1);
+	        GL.VertexAttribPointer(LocationSlot, 2, VertexAttribPointerType.Float, false, BasicVertex.ByteSize, BasicVertex.LocationOffset);
+	        GL.EnableVertexAttribArray(LocationSlot);
+	        GL.VertexAttribPointer(ColorSlot, 4, VertexAttribPointerType.Float, false, BasicVertex.ByteSize, BasicVertex.ColorOffset);
+	        GL.EnableVertexAttribArray(ColorSlot);
 	        GL.BindVertexArray(0);
 
 	        return Id;
@@ -87,6 +89,7 @@ namespace GPUExperiments.Common.Buffers
 		    Location = new Vector4(x, y, 0, 1f);
 		    Color = new Vector4(color.R / 255f, color.G / 255f, color.B / 255f, color.A / 255f);
 	    }
+
 	    public static int LocationOffset => 0;
 	    public static int ColorOffset => (int)(sizeof(float) * 4);
 	    public static int Size => 8;
