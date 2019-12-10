@@ -1,49 +1,40 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
-namespace GPUExperiments.Common.Series
+namespace GPUExperiments.Common.Format
 {
 	public enum SeriesType : byte
 	{
 		FloatSeries,
 		IntSeries,
 	}
-    [Flags]
-	public enum SampleStyle : byte
-	{
-		IsBaked,
-		ShouldInterpolate,
-		Reverse,
-    }
 
-    public struct Series
+    public struct SeriesUtils
     {
         public static uint SeriesIdCounter = 1;
-
-        public ushort Id;
-	    public SeriesType Type;
-	    public SampleStyle SampleStyle;
-        public ushort VectorSize;
-	    public uint Count;
+		
     }
 
+	/// <summary>
+    /// A series data block that can be int or float based, and stored in the document (format) or in place (working).
+    /// </summary>
+    /// <typeparam name="T">Float or Int.</typeparam>
     public abstract class SeriesData<T> where T : struct
     {
-        protected static uint NextSeriesId => Series.SeriesIdCounter++;
+        protected static uint NextSeriesId => SeriesUtils.SeriesIdCounter++;
 
         public uint Id { get; private set; }
-	    public uint Capacity { get; protected set; } = 0;
-	    public int Length => LocalData.Length;
-	    public abstract T[] Data { get; }
+        public abstract SeriesType SeriesType { get; }
+        public ushort VectorSize;
 
-	    protected Document Document { get; }
+	    public int Length => Data.Length;
+	    public T[] Data => (Id == 0) ? LocalData : BlockData[Id];
+
+        protected Document Document { get; }
 	    protected T[] LocalData;
+	    protected abstract DataBlocks<T> BlockData { get; }
 
-        //private List<ushort> _refs { get; } = new List<ushort>();
+	    //private List<ushort> _refs { get; } = new List<ushort>();
         //private bool _dataChanged;
         //private bool _dataLengthChanged;
 
@@ -65,14 +56,17 @@ namespace GPUExperiments.Common.Series
 
     public class FloatSeriesData : SeriesData<float>
     {
-	    public override float[] Data => (Id == 0) ? LocalData : Document.FloatDataStore[Id];
+	    public override SeriesType SeriesType => SeriesType.FloatSeries;
+	    protected override DataBlocks<float> BlockData => Document.FloatBlocks;
 
-        public FloatSeriesData(float[] localData) : base(localData) { }
+	    public FloatSeriesData(float[] localData) : base(localData) { }
         public FloatSeriesData(uint id) : base(id) { }
     }
+
     public class IntSeriesData : SeriesData<int>
     {
-	    public override int[] Data => (Id == 0) ? LocalData : Document.IntDataStore[Id];
+	    public override SeriesType SeriesType => SeriesType.IntSeries;
+        protected override DataBlocks<int> BlockData => Document.IntBlocks;
 
         public IntSeriesData(int[] localData) : base(localData) { }
         public IntSeriesData(uint id) : base(id) { }
