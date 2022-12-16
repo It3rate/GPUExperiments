@@ -17,7 +17,7 @@ void main()
   vec3 kColor = vec3(0.4, 0.0, 0.0);
   //float len = abs(pos.x);//+pos.y+pos.z);
   float len = length(pos)+(pos.y*.7);
-  float intensity = smoothstep(0.9, 1, (len - .2)*10.0);
+  float intensity = smoothstep(0.9, 1.0, (len - .2)*10.0);
   //float intensity = len < .5 ? 0.0 : 0.7;
   color = vec4(mix(vColor, 1.0-vColor + norm, intensity), 1);
 }
